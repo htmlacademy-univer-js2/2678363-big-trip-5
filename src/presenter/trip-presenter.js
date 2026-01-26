@@ -40,10 +40,10 @@ export default class TripPresenter {
     render(newEventView, this.tripEventListComponent.getElement(), RenderPosition.AFTERBEGIN);
 
     const events = this.tripModel.events;
-    const eventsToRender = events.slice(0, 3);
-    eventsToRender.forEach((eventData) => {
+    for (let i = 1; i < events.length; i++) {
+      const eventData = events[i];
       const eventView = new TripEventView(eventData);
       render(eventView, this.tripEventListComponent.getElement());
-    });
+    }
   }
 }

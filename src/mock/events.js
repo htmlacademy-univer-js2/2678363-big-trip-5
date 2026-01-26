@@ -5,6 +5,7 @@ import { OFFERS } from './offers.js';
 
 const EVENTS = [
   {
+    id: 1,
     type: getRandomArrayElement(EVENT_TYPES),
     destination: getRandomArrayElement(DESTINATIONS),
     startTime: new Date(),
@@ -13,6 +14,7 @@ const EVENTS = [
     offers: OFFERS.slice(0, getRandomNumber(0, 3))
   },
   {
+    id: 2,
     type: getRandomArrayElement(EVENT_TYPES),
     destination: getRandomArrayElement(DESTINATIONS),
     startTime: new Date(Date.now() + MSEC_IN_HOUR * 24),
@@ -21,6 +23,7 @@ const EVENTS = [
     offers: OFFERS.slice(0, getRandomNumber(0, 3))
   },
   {
+    id: 3,
     type: getRandomArrayElement(EVENT_TYPES),
     destination: getRandomArrayElement(DESTINATIONS),
     startTime: new Date(Date.now() + MSEC_IN_HOUR * 48),

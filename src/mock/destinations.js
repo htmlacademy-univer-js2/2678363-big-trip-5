@@ -24,6 +24,7 @@ function getRandomDescription(text) {
 
 const DESTINATIONS = [
   {
+    id: 1,
     name: 'Amsterdam',
     description: getRandomDescription(DESCRIPTION_TEXT),
     pictures: Array.from({ length: getRandomNumber(1, 5) }, () => ({
@@ -31,6 +32,7 @@ const DESTINATIONS = [
     }))
   },
   {
+    id: 2,
     name: 'Geneva',
     description: getRandomDescription(DESCRIPTION_TEXT),
     pictures: Array.from({ length: getRandomNumber(1, 5) }, () => ({
@@ -38,6 +40,7 @@ const DESTINATIONS = [
     }))
   },
   {
+    id: 3,
     name: 'Chamonix',
     description: getRandomDescription(DESCRIPTION_TEXT),
     pictures: Array.from({ length: getRandomNumber(1, 5) }, () => ({

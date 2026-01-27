@@ -8,7 +8,7 @@ function createTripEventEditTemplate(eventData = null, destinations = [], offers
     : { name: 'Amsterdam', description: '', pictures: [] };
 
   const defaultOffers = offers.filter((offer) =>
-    offer.title === 'Add luggage' || offer.title === 'Switch to comfort class'
+    offer.id === 1 || offer.id === 2
   );
 
   const defaultEvent = {
@@ -27,7 +27,7 @@ function createTripEventEditTemplate(eventData = null, destinations = [], offers
   const endDateValue = formatDateTime(new Date(endTime));
 
   const offersTemplate = offers.map((offer, index) => {
-    const isSelected = selectedOffers.some((selected) => selected.title === offer.title);
+    const isSelected = selectedOffers.some((selected) => selected.id === offer.id);
     return `
       <div class="event__offer-selector">
         <input 

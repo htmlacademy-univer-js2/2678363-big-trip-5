@@ -3,13 +3,14 @@ import SortView from '../view/sort-view.js';
 import TripEventEditView from '../view/trip-event-edit-view.js';
 import TripEventView from '../view/trip-event-view.js';
 import TripEventListView from '../view/trip-event-list-view.js';
-import { render } from '../render.js';
+import { render, RenderPosition } from '../render.js';
 
 export default class TripPresenter {
-  constructor({ tripEventsContainer, filtersContainer, sortContainer }) {
+  constructor({ tripEventsContainer, filtersContainer, sortContainer, tripModel }) {
     this.tripEventsContainer = tripEventsContainer;
     this.filtersContainer = filtersContainer;
     this.sortContainer = sortContainer;
+    this.tripModel = tripModel;
 
     this.tripEventListComponent = new TripEventListView();
   }
@@ -31,10 +32,18 @@ export default class TripPresenter {
   renderTripEvents() {
     render(this.tripEventListComponent, this.tripEventsContainer);
 
-    render(new TripEventEditView(), this.tripEventListComponent.getElement());
+    const newEventView = new TripEventEditView(
+      null,
+      this.tripModel.destinations,
+      this.tripModel.offers
+    );
+    render(newEventView, this.tripEventListComponent.getElement(), RenderPosition.AFTERBEGIN);
 
-    for (let i = 0; i < 3; i++) {
-      render(new TripEventView(), this.tripEventListComponent.getElement());
+    const events = this.tripModel.events;
+    for (let i = 1; i < events.length; i++) {
+      const eventData = events[i];
+      const eventView = new TripEventView(eventData);
+      render(eventView, this.tripEventListComponent.getElement());
     }
   }
 }

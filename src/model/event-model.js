@@ -1,4 +1,4 @@
-export default class Event {
+export default class EventModel {
   constructor({ type, destination, startTime, endTime, price, offers }) {
     this.type = type;
     this.destination = destination;

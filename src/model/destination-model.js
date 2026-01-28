@@ -1,4 +1,4 @@
-export default class Destination {
+export default class DestinationModel {
   constructor({ name, description, pictures }) {
     this.name = name;
     this.description = description;

@@ -37,13 +37,13 @@ export default class TripPresenter {
       this.tripModel.destinations,
       this.tripModel.offers
     );
-    render(newEventView, this.tripEventListComponent.getElement(), RenderPosition.AFTERBEGIN);
+    render(newEventView, this.tripEventListComponent.element, RenderPosition.AFTERBEGIN);
 
     const events = this.tripModel.events;
     for (let i = 1; i < events.length; i++) {
       const eventData = events[i];
       const eventView = new TripEventView(eventData);
-      render(eventView, this.tripEventListComponent.getElement());
+      render(eventView, this.tripEventListComponent.element);
     }
   }
 }

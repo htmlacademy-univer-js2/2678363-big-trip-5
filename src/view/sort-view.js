@@ -32,7 +32,7 @@ function createSortTemplate() {
 }
 
 export default class SortView extends AbstractView {
-  getTemplate() {
+  get template() {
     return createSortTemplate();
   }
 }

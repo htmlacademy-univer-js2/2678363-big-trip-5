@@ -32,7 +32,7 @@ function createFilterTemplate() {
 }
 
 export default class FilterView extends AbstractView {
-  getTemplate() {
+  get template() {
     return createFilterTemplate();
   }
 }

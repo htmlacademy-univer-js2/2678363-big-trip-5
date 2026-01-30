@@ -3,7 +3,7 @@ import SortView from '../view/sort-view.js';
 import TripEventEditView from '../view/trip-event-edit-view.js';
 import TripEventView from '../view/trip-event-view.js';
 import TripEventListView from '../view/trip-event-list-view.js';
-import { render, RenderPosition } from '../render.js';
+import { render, RenderPosition } from '../framework/render.js';
 
 export default class TripPresenter {
   constructor({ tripEventsContainer, filtersContainer, sortContainer, tripModel }) {

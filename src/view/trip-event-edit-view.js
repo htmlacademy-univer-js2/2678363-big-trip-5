@@ -165,14 +165,18 @@ function createTripEventEditTemplate(eventData = null, destinations = [], offers
 }
 
 export default class TripEventEditView extends AbstractView {
-  constructor(eventData = null, destinations = [], offers = []) {
+  #eventData = null;
+  #destinations = [];
+  #offers = [];
+
+  constructor(eventData, destinations, offers) {
     super();
-    this.eventData = eventData;
-    this.destinations = destinations;
-    this.offers = offers;
+    this.#eventData = eventData;
+    this.#destinations = destinations;
+    this.#offers = offers;
   }
 
-  getTemplate() {
-    return createTripEventEditTemplate(this.eventData, this.destinations, this.offers);
+  get template() {
+    return createTripEventEditTemplate(this.#eventData, this.#destinations, this.#offers);
   }
 }

@@ -168,12 +168,26 @@ export default class TripEventEditView extends AbstractView {
   #eventData = null;
   #destinations = [];
   #offers = [];
+  #onFormSubmit = null;
+  #onCloseClick = null;
 
-  constructor(eventData, destinations, offers) {
+  constructor({ eventData, destinations, offers, onFormSubmit, onCloseClick }) {
     super();
     this.#eventData = eventData;
     this.#destinations = destinations;
     this.#offers = offers;
+    this.#onFormSubmit = onFormSubmit;
+    this.#onCloseClick = onCloseClick;
+
+    this.element.querySelector('form').addEventListener('submit', (evt) => {
+      evt.preventDefault();
+      this.#onFormSubmit();
+    });
+
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', (evt) => {
+      evt.preventDefault();
+      this.#onCloseClick();
+    });
   }
 
   get template() {

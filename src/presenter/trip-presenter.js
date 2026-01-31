@@ -3,7 +3,7 @@ import SortView from '../view/sort-view.js';
 import TripEventEditView from '../view/trip-event-edit-view.js';
 import TripEventView from '../view/trip-event-view.js';
 import TripEventListView from '../view/trip-event-list-view.js';
-import { render, RenderPosition } from '../framework/render.js';
+import { render, replace } from '../framework/render.js';
 
 export default class TripPresenter {
   constructor({ tripEventsContainer, filtersContainer, sortContainer, tripModel }) {
@@ -13,6 +13,8 @@ export default class TripPresenter {
     this.tripModel = tripModel;
 
     this.tripEventListComponent = new TripEventListView();
+    this.tripEventComponents = [];
+    this.tripEventEditComponents = [];
   }
 
   init() {
@@ -32,18 +34,55 @@ export default class TripPresenter {
   renderTripEvents() {
     render(this.tripEventListComponent, this.tripEventsContainer);
 
-    const newEventView = new TripEventEditView(
-      null,
-      this.tripModel.destinations,
-      this.tripModel.offers
-    );
-    render(newEventView, this.tripEventListComponent.element, RenderPosition.AFTERBEGIN);
-
     const events = this.tripModel.events;
-    for (let i = 1; i < events.length; i++) {
+    for (let i = 0; i < events.length; i++) {
       const eventData = events[i];
-      const eventView = new TripEventView(eventData);
-      render(eventView, this.tripEventListComponent.element);
+
+      const tripEventComponent = new TripEventView({
+        event: eventData,
+        onRollupClick: () => this.#replaceEventToForm(i)
+      });
+      this.tripEventComponents.push(tripEventComponent);
+
+      const tripEventEditComponent = new TripEventEditView({
+        eventData: eventData,
+        destinations: this.tripModel.destinations,
+        offers: this.tripModel.offers,
+        onFormSubmit: () => this.#replaceFormToEvent(i),
+        onCloseClick: () => this.#replaceFormToEvent(i)
+      });
+      this.tripEventEditComponents.push(tripEventEditComponent);
+
+      render(tripEventComponent, this.tripEventListComponent.element);
     }
   }
+
+  #onEscapeKeyDown = (evt) => {
+    if (evt.key === 'Escape') {
+      evt.preventDefault();
+      if (this.currentFormIndex !== null) {
+        this.#replaceFormToEvent(this.currentFormIndex);
+      }
+    }
+  };
+
+  #replaceEventToForm = (index) => {
+    const tripEventComponent = this.tripEventComponents[index];
+    const tripEventEditComponent = this.tripEventEditComponents[index];
+
+    replace(tripEventEditComponent, tripEventComponent);
+
+    this.currentFormIndex = index;
+    document.addEventListener('keydown', this.#onEscapeKeyDown);
+  };
+
+  #replaceFormToEvent = (index) => {
+    const tripEventComponent = this.tripEventComponents[index];
+    const tripEventEditComponent = this.tripEventEditComponents[index];
+
+    replace(tripEventComponent, tripEventEditComponent);
+
+    this.currentFormIndex = null;
+    document.removeEventListener('keydown', this.#onEscapeKeyDown);
+  };
 }

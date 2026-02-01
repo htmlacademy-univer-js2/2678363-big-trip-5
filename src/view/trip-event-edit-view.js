@@ -179,7 +179,7 @@ export default class TripEventEditView extends AbstractView {
     this.#onFormSubmit = onFormSubmit;
     this.#onCloseClick = onCloseClick;
 
-    this.element.querySelector('form').addEventListener('submit', (evt) => {
+    this.element.querySelector('.event').addEventListener('submit', (evt) => {
       evt.preventDefault();
       this.#onFormSubmit();
     });

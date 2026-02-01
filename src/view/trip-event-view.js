@@ -1,5 +1,5 @@
-import { createElement } from '../render.js';
 import { formatDate, formatTime, getDuration } from '../utils.js';
+import AbstractView from '../framework/view/abstract-view.js';
 
 function createTripEventTemplate(eventData) {
   const { type, destination, startTime, endTime, price, offers } = eventData;
@@ -59,23 +59,22 @@ function createTripEventTemplate(eventData) {
   `;
 }
 
-export default class TripEventView {
-  constructor(event) {
-    this.event = event;
+export default class TripEventView extends AbstractView {
+  #event = null;
+  #onRollupClick = null;
+
+  constructor({ event, onRollupClick }) {
+    super();
+    this.#event = event;
+    this.#onRollupClick = onRollupClick;
+
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', (evt) => {
+      evt.preventDefault();
+      this.#onRollupClick();
+    });
   }
 
-  getTemplate() {
-    return createTripEventTemplate(this.event);
-  }
-
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
-    return this.element;
-  }
-
-  removeElement() {
-    this.element = null;
+  get template() {
+    return createTripEventTemplate(this.#event);
   }
 }

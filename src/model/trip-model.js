@@ -1,11 +1,11 @@
-import Destination from './destination-model.js';
-import Event from './event-model.js';
-import Offer from './offer-model.js';
+import DestinationModel from './destination-model.js';
+import EventModel from './event-model.js';
+import OfferModel from './offer-model.js';
 
 export default class TripModel {
   constructor(destinations, events, offers) {
-    this.destinations = destinations.map((destination) => new Destination(destination));
-    this.events = events.map((event) => new Event(event));
-    this.offers = offers.map((offer) => new Offer(offer));
+    this.destinations = destinations.map((destination) => new DestinationModel(destination));
+    this.events = events.map((event) => new EventModel(event));
+    this.offers = offers.map((offer) => new OfferModel(offer));
   }
 }

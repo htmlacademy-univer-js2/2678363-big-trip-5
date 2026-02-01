@@ -1,6 +1,6 @@
-import { createElement } from '../render.js';
 import { EVENT_TYPES } from '../const.js';
 import { formatDateTime } from '../utils.js';
+import AbstractView from '../framework/view/abstract-view.js';
 
 function createTripEventEditTemplate(eventData = null, destinations = [], offers = []) {
   const fallbackDestination = destinations.length > 0
@@ -30,11 +30,11 @@ function createTripEventEditTemplate(eventData = null, destinations = [], offers
     const isSelected = selectedOffers.some((selected) => selected.id === offer.id);
     return `
       <div class="event__offer-selector">
-        <input 
-          class="event__offer-checkbox visually-hidden" 
-          id="event-offer-${index}" 
-          type="checkbox" 
-          name="event-offer" 
+        <input
+          class="event__offer-checkbox visually-hidden"
+          id="event-offer-${index}"
+          type="checkbox"
+          name="event-offer"
           ${isSelected ? 'checked' : ''}
         >
         <label class="event__offer-label" for="event-offer-${index}">
@@ -48,15 +48,15 @@ function createTripEventEditTemplate(eventData = null, destinations = [], offers
 
   const eventTypesTemplate = EVENT_TYPES.map((eventType) => `
     <div class="event__type-item">
-      <input 
-        id="event-type-${eventType.toLowerCase()}" 
-        class="event__type-input visually-hidden" 
-        type="radio" 
-        name="event-type" 
+      <input
+        id="event-type-${eventType.toLowerCase()}"
+        class="event__type-input visually-hidden"
+        type="radio"
+        name="event-type"
         value="${eventType.toLowerCase()}"
         ${type === eventType.toLowerCase() ? 'checked' : ''}
       >
-      <label class="event__type-label event__type-label--${eventType.toLowerCase()}" 
+      <label class="event__type-label event__type-label--${eventType.toLowerCase()}"
              for="event-type-${eventType.toLowerCase()}">
         ${eventType}
       </label>
@@ -86,58 +86,58 @@ function createTripEventEditTemplate(eventData = null, destinations = [], offers
               </fieldset>
             </div>
           </div>
-          
+
           <div class="event__field-group event__field-group--destination">
             <label class="event__label event__type-output" for="event-destination-1">
               ${type}
             </label>
-            <input class="event__input event__input--destination" 
-                   id="event-destination-1" 
-                   type="text" 
-                   name="event-destination" 
-                   value="${destination.name}" 
+            <input class="event__input event__input--destination"
+                   id="event-destination-1"
+                   type="text"
+                   name="event-destination"
+                   value="${destination.name}"
                    list="destination-list-1">
             <datalist id="destination-list-1">
               ${destinationOptions}
             </datalist>
           </div>
-          
+
           <div class="event__field-group event__field-group--time">
             <label class="visually-hidden" for="event-start-time-1">From</label>
-            <input class="event__input event__input--time" 
-                   id="event-start-time-1" 
-                   type="text" 
-                   name="event-start-time" 
+            <input class="event__input event__input--time"
+                   id="event-start-time-1"
+                   type="text"
+                   name="event-start-time"
                    value="${dateValue}">
             &mdash;
             <label class="visually-hidden" for="event-end-time-1">To</label>
-            <input class="event__input event__input--time" 
-                   id="event-end-time-1" 
-                   type="text" 
-                   name="event-end-time" 
+            <input class="event__input event__input--time"
+                   id="event-end-time-1"
+                   type="text"
+                   name="event-end-time"
                    value="${endDateValue}">
           </div>
-          
+
           <div class="event__field-group event__field-group--price">
             <label class="event__label" for="event-price-1">
               <span class="visually-hidden">Price</span>
               &euro;
             </label>
-            <input class="event__input event__input--price" 
-                   id="event-price-1" 
-                   type="number" 
-                   min="1" 
-                   name="event-price" 
+            <input class="event__input event__input--price"
+                   id="event-price-1"
+                   type="number"
+                   min="1"
+                   name="event-price"
                    value="${price}">
           </div>
-          
+
           <button class="event__save-btn btn btn--blue" type="submit">Save</button>
           <button class="event__reset-btn" type="reset">Delete</button>
           <button class="event__rollup-btn" type="button">
             <span class="visually-hidden">Close</span>
           </button>
         </header>
-        
+
         <section class="event__details">
           <section class="event__section event__section--offers">
             <h3 class="event__section-title event__section-title--offers">Offers</h3>
@@ -164,25 +164,33 @@ function createTripEventEditTemplate(eventData = null, destinations = [], offers
   `;
 }
 
-export default class TripEventEditView {
-  constructor(eventData = null, destinations = [], offers = []) {
-    this.eventData = eventData;
-    this.destinations = destinations;
-    this.offers = offers;
+export default class TripEventEditView extends AbstractView {
+  #eventData = null;
+  #destinations = [];
+  #offers = [];
+  #onFormSubmit = null;
+  #onCloseClick = null;
+
+  constructor({ eventData, destinations, offers, onFormSubmit, onCloseClick }) {
+    super();
+    this.#eventData = eventData;
+    this.#destinations = destinations;
+    this.#offers = offers;
+    this.#onFormSubmit = onFormSubmit;
+    this.#onCloseClick = onCloseClick;
+
+    this.element.querySelector('.event--edit').addEventListener('submit', (evt) => {
+      evt.preventDefault();
+      this.#onFormSubmit();
+    });
+
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', (evt) => {
+      evt.preventDefault();
+      this.#onCloseClick();
+    });
   }
 
-  getTemplate() {
-    return createTripEventEditTemplate(this.eventData, this.destinations, this.offers);
-  }
-
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
-    return this.element;
-  }
-
-  removeElement() {
-    this.element = null;
+  get template() {
+    return createTripEventEditTemplate(this.#eventData, this.#destinations, this.#offers);
   }
 }

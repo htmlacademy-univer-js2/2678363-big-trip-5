@@ -1,4 +1,4 @@
-export default class Offer {
+export default class OfferModel {
   constructor({ id, title, price }) {
     this.id = id;
     this.title = title;

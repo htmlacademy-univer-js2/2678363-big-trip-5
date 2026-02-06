@@ -11,7 +11,7 @@ export default class TripPresenter {
   #tripModel = null;
 
   #tripEventListComponent = null;
-  #eventPresenters = [];
+  #eventPresenters = new Map();
 
   constructor({ tripEventsContainer, filtersContainer, sortContainer, tripModel }) {
     this.#tripEventsContainer = tripEventsContainer;
@@ -48,10 +48,25 @@ export default class TripPresenter {
       eventListContainer: this.#tripEventListComponent.element,
       event: event,
       destinations: this.#tripModel.destinations,
-      offers: this.#tripModel.offers
+      offers: this.#tripModel.offers,
+      onDataChange: this.#handleDataChange,
+      onModeChange: this.#handleModeChange
     });
-    eventPresenter.init();
 
-    this.#eventPresenters.push(eventPresenter);
+    eventPresenter.init();
+    this.#eventPresenters.set(event.id, eventPresenter);
   }
+
+  #handleDataChange = (updatedEvent) => {
+    this.#tripModel.updateEvent(updatedEvent);
+
+    const eventPresenter = this.#eventPresenters.get(updatedEvent.id);
+    if (eventPresenter) {
+      eventPresenter.updateEvent(updatedEvent);
+    }
+  };
+
+  #handleModeChange = () => {
+    this.#eventPresenters.forEach((presenter) => presenter.resetView());
+  };
 }

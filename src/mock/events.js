@@ -11,7 +11,8 @@ const EVENTS = [
     startTime: new Date(),
     endTime: new Date(Date.now() + MSEC_IN_HOUR * 2),
     price: getRandomNumber(50, 300),
-    offers: OFFERS.slice(0, getRandomNumber(0, 3))
+    offers: OFFERS.slice(0, getRandomNumber(0, 3)),
+    isFavorite: true
   },
   {
     id: 2,
@@ -20,7 +21,8 @@ const EVENTS = [
     startTime: new Date(Date.now() + MSEC_IN_HOUR * 24),
     endTime: new Date(Date.now() + MSEC_IN_HOUR * 26),
     price: getRandomNumber(50, 300),
-    offers: OFFERS.slice(0, getRandomNumber(0, 3))
+    offers: OFFERS.slice(0, getRandomNumber(0, 3)),
+    isFavorite: false
   },
   {
     id: 3,
@@ -29,7 +31,8 @@ const EVENTS = [
     startTime: new Date(Date.now() + MSEC_IN_HOUR * 48),
     endTime: new Date(Date.now() + MSEC_IN_HOUR * 50),
     price: getRandomNumber(50, 300),
-    offers: OFFERS.slice(0, getRandomNumber(0, 3))
+    offers: OFFERS.slice(0, getRandomNumber(0, 3)),
+    isFavorite: false
   }
 ];
 

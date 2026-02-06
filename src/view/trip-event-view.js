@@ -2,7 +2,7 @@ import { formatDate, formatTime, getDuration } from '../utils.js';
 import AbstractView from '../framework/view/abstract-view.js';
 
 function createTripEventTemplate(eventData) {
-  const { type, destination, startTime, endTime, price, offers } = eventData;
+  const { type, destination, startTime, endTime, price, offers, isFavorite } = eventData;
 
   const startDate = new Date(startTime);
   const endDate = new Date(endTime);
@@ -45,7 +45,7 @@ function createTripEventTemplate(eventData) {
             ${offersTemplate}
           </ul>
         ` : ''}
-        <button class="event__favorite-btn" type="button">
+        <button class="event__favorite-btn ${isFavorite ? 'event__favorite-btn--active' : ''}" type="button">
           <span class="visually-hidden">Add to favorite</span>
           <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
             <path d="M14 21l-8.22899 4.3262 1.57159-9.1631L.685209 9.67376 9.8855 8.33688 14 0l4.1145 8.33688 9.2003 1.33688-6.6574 6.48934 1.5716 9.1631L14 21z"/>
@@ -62,19 +62,32 @@ function createTripEventTemplate(eventData) {
 export default class TripEventView extends AbstractView {
   #event = null;
   #onRollupClick = null;
+  #onFavoriteClick = null;
 
-  constructor({ event, onRollupClick }) {
+  constructor({ event, onRollupClick, onFavoriteClick }) {
     super();
     this.#event = event;
     this.#onRollupClick = onRollupClick;
+    this.#onFavoriteClick = onFavoriteClick;
 
-    this.element.querySelector('.event__rollup-btn').addEventListener('click', (evt) => {
-      evt.preventDefault();
-      this.#onRollupClick();
-    });
+    const rollupButton = this.element.querySelector('.event__rollup-btn');
+    const favoriteButton = this.element.querySelector('.event__favorite-btn');
+
+    rollupButton.addEventListener('click', this.#rollupClickHandler);
+    favoriteButton.addEventListener('click', this.#favoriteClickHandler);
   }
 
   get template() {
     return createTripEventTemplate(this.#event);
   }
+
+  #favoriteClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#onFavoriteClick();
+  };
+
+  #rollupClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#onRollupClick();
+  };
 }

@@ -21,33 +21,40 @@ export default class EventPresenter {
   init() {
     this.#eventComponent = new TripEventView({
       event: this.#event,
-      onRollupClick: () => this.#replaceEventToForm()
+      onRollupClick: this.#replaceEventToForm
     });
 
     this.#eventEditComponent = new TripEventEditView({
       eventData: this.#event,
       destinations: this.#destinations,
       offers: this.#offers,
-      onFormSubmit: () => this.#replaceFormToEvent(),
-      onCloseClick: () => this.#replaceFormToEvent()
+      onFormSubmit: this.#handleFormSubmit,
+      onCloseClick: this.#handleCloseClick
     });
-
-    this.#eventComponent.element.addEventListener('click', this.#replaceEventToForm());
 
     this.#eventListContainer.append(this.#eventComponent.element);
   }
 
   #replaceEventToForm = () => {
     replace(this.#eventEditComponent, this.#eventComponent);
-    document.addEventListener('keydown', this.#onEscapeKeyDown);
+    document.addEventListener('keydown', this.#escKeyDownHandler);
   };
 
   #replaceFormToEvent = () => {
     replace(this.#eventComponent, this.#eventEditComponent);
-    document.removeEventListener('keydown', this.#onEscapeKeyDown);
+    document.removeEventListener('keydown', this.#escKeyDownHandler);
   };
 
-  #onEscapeKeyDown = (evt) => {
+  #handleFormSubmit = () => {
+    this.#replaceFormToEvent();
+  };
+
+  #handleCloseClick = () => {
+    this.#replaceFormToEvent();
+  };
+
+
+  #escKeyDownHandler = (evt) => {
     if (evt.key === 'Escape') {
       evt.preventDefault();
       this.#replaceFormToEvent();

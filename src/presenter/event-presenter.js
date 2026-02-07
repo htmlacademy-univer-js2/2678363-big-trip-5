@@ -1,6 +1,6 @@
 import TripEventEditView from '../view/trip-event-edit-view.js';
 import TripEventView from '../view/trip-event-view.js';
-import { replace, remove } from '../framework/render.js';
+import { render, replace, remove } from '../framework/render.js';
 
 const Mode = {
   DEFAULT: 'DEFAULT',
@@ -29,11 +29,14 @@ export default class EventPresenter {
   }
 
   init() {
+    const prevComponent = this.#eventComponent;
+
     this.#eventComponent = new TripEventView({
       event: this.#event,
       onRollupClick: this.#handleRollupClick,
       onFavoriteClick: this.#handleFavoriteClick
     });
+
     this.#eventEditComponent = new TripEventEditView({
       eventData: this.#event,
       destinations: this.#destinations,
@@ -41,35 +44,18 @@ export default class EventPresenter {
       onFormSubmit: this.#handleFormSubmit,
       onCloseClick: this.#handleCloseClick
     });
-    this.#eventListContainer.append(this.#eventComponent.element);
+
+    if (prevComponent) {
+      replace(this.#eventComponent, prevComponent);
+      remove(prevComponent);
+    } else {
+      render(this.#eventComponent, this.#eventListContainer);
+    }
   }
 
   updateEvent(updatedEvent) {
     this.#event = updatedEvent;
-
-    if (this.#mode === Mode.EDITING) {
-      const oldEditComponent = this.#eventEditComponent;
-
-      this.#eventEditComponent = new TripEventEditView({
-        eventData: this.#event,
-        destinations: this.#destinations,
-        offers: this.#offers,
-        onFormSubmit: this.#handleFormSubmit,
-        onCloseClick: this.#handleCloseClick
-      });
-
-      replace(this.#eventEditComponent, oldEditComponent);
-    } else {
-      const oldEventComponent = this.#eventComponent;
-
-      this.#eventComponent = new TripEventView({
-        event: this.#event,
-        onRollupClick: this.#handleRollupClick,
-        onFavoriteClick: this.#handleFavoriteClick
-      });
-
-      replace(this.#eventComponent, oldEventComponent);
-    }
+    this.init();
   }
 
   resetView() {

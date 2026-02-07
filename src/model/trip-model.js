@@ -8,9 +8,9 @@ export default class TripModel {
   #offers = [];
 
   constructor(destinations, events, offers) {
-    this.destinations = destinations.map((destination) => new DestinationModel(destination));
-    this.events = events.map((event) => new EventModel(event));
-    this.offers = offers.map((offer) => new OfferModel(offer));
+    this.#destinations = destinations.map((destination) => new DestinationModel(destination));
+    this.#events = events.map((event) => new EventModel(event));
+    this.#offers = offers.map((offer) => new OfferModel(offer));
   }
 
   get destinations() {

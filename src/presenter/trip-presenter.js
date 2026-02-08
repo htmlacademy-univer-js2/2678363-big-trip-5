@@ -18,7 +18,6 @@ export default class TripPresenter {
     this.#filtersContainer = filtersContainer;
     this.#sortContainer = sortContainer;
     this.#tripModel = tripModel;
-
     this.#tripEventListComponent = new TripEventListView();
   }
 
@@ -46,14 +45,13 @@ export default class TripPresenter {
   #renderEvent(event) {
     const eventPresenter = new EventPresenter({
       eventListContainer: this.#tripEventListComponent.element,
-      event: event,
       destinations: this.#tripModel.destinations,
       offers: this.#tripModel.offers,
       onDataChange: this.#handleDataChange,
       onModeChange: this.#handleModeChange
     });
 
-    eventPresenter.init();
+    eventPresenter.init(event);
     this.#eventPresenters.set(event.id, eventPresenter);
   }
 
@@ -62,7 +60,7 @@ export default class TripPresenter {
 
     const eventPresenter = this.#eventPresenters.get(updatedEvent.id);
     if (eventPresenter) {
-      eventPresenter.updateEvent(updatedEvent);
+      eventPresenter.init(updatedEvent);
     }
   };
 

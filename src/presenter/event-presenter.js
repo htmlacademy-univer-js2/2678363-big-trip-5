@@ -19,16 +19,17 @@ export default class EventPresenter {
   #eventEditComponent = null;
   #mode = Mode.DEFAULT;
 
-  constructor({ eventListContainer, event, destinations, offers, onDataChange, onModeChange }) {
+  constructor({ eventListContainer, destinations, offers, onDataChange, onModeChange }) {
     this.#eventListContainer = eventListContainer;
-    this.#event = event;
     this.#destinations = destinations;
     this.#offers = offers;
     this.#handleDataChange = onDataChange;
     this.#handleModeChange = onModeChange;
   }
 
-  init() {
+  init(event) {
+    this.#event = event;
+
     const prevComponent = this.#eventComponent;
 
     this.#eventComponent = new TripEventView({
@@ -51,11 +52,6 @@ export default class EventPresenter {
     } else {
       render(this.#eventComponent, this.#eventListContainer);
     }
-  }
-
-  updateEvent(updatedEvent) {
-    this.#event = updatedEvent;
-    this.init();
   }
 
   resetView() {

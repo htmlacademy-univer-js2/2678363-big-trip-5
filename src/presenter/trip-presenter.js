@@ -37,9 +37,9 @@ export default class TripPresenter {
     render(
       new SortView({
         onSortTypeChange: this.#handleSortTypeChange
-      }), 
+      }),
       this.#sortContainer
-    ); 
+    );
   }
 
   #renderTripEvents() {
@@ -64,7 +64,7 @@ export default class TripPresenter {
 
   #getSortedEvents() {
     const events = [...this.#tripModel.events];
-    
+
     switch (this.#currentSortType) {
       case 'time':
         return events.sort((a, b) => {
@@ -72,10 +72,10 @@ export default class TripPresenter {
           const durationB = b.endTime - b.startTime;
           return durationB - durationA;
         });
-        
+
       case 'price':
         return events.sort((a, b) => b.price - a.price);
-        
+
       case 'day':
       default:
         return events.sort((a, b) => a.startTime - b.startTime);
@@ -91,14 +91,14 @@ export default class TripPresenter {
     if (sortType === this.#currentSortType) {
       return;
     }
-    
+
     this.#currentSortType = sortType;
     this.#isSorting = true;
-    
+
     this.#clearEventList();
-    
+
     this.#renderTripEvents();
-    
+
     this.#isSorting = false;
   };
 

@@ -1,9 +1,8 @@
 import FiltersView from '../view/filter-view.js';
 import SortView from '../view/sort-view.js';
-import TripEventEditView from '../view/trip-event-edit-view.js';
-import TripEventView from '../view/trip-event-view.js';
 import TripEventListView from '../view/trip-event-list-view.js';
-import { render, replace } from '../framework/render.js';
+import { render } from '../framework/render.js';
+import EventPresenter from './event-presenter.js';
 
 export default class TripPresenter {
   #tripEventsContainer = null;
@@ -12,88 +11,60 @@ export default class TripPresenter {
   #tripModel = null;
 
   #tripEventListComponent = null;
-  #tripEventComponents = [];
-  #tripEventEditComponents = [];
-  #currentFormIndex = null;
-
+  #eventPresenters = new Map();
 
   constructor({ tripEventsContainer, filtersContainer, sortContainer, tripModel }) {
     this.#tripEventsContainer = tripEventsContainer;
     this.#filtersContainer = filtersContainer;
     this.#sortContainer = sortContainer;
     this.#tripModel = tripModel;
-
     this.#tripEventListComponent = new TripEventListView();
-    this.#tripEventComponents = [];
-    this.#tripEventEditComponents = [];
   }
 
   init() {
-    this.renderFilters();
-    this.renderSort();
-    this.renderTripEvents();
+    this.#renderFilters();
+    this.#renderSort();
+    this.#renderTripEvents();
   }
 
-  renderFilters() {
+  #renderFilters() {
     render(new FiltersView(), this.#filtersContainer);
   }
 
-  renderSort() {
+  #renderSort() {
     render(new SortView(), this.#sortContainer);
   }
 
-  renderTripEvents() {
+  #renderTripEvents() {
     render(this.#tripEventListComponent, this.#tripEventsContainer);
 
     const events = this.#tripModel.events;
-    for (let i = 0; i < events.length; i++) {
-      const eventData = events[i];
-
-      const tripEventComponent = new TripEventView({
-        event: eventData,
-        onRollupClick: () => this.#replaceEventToForm(i)
-      });
-      this.#tripEventComponents.push(tripEventComponent);
-
-      const tripEventEditComponent = new TripEventEditView({
-        eventData: eventData,
-        destinations: this.#tripModel.destinations,
-        offers: this.#tripModel.offers,
-        onFormSubmit: () => this.#replaceFormToEvent(i),
-        onCloseClick: () => this.#replaceFormToEvent(i)
-      });
-      this.#tripEventEditComponents.push(tripEventEditComponent);
-
-      render(tripEventComponent, this.#tripEventListComponent.element);
-    }
+    events.forEach((event) => this.#renderEvent(event));
   }
 
-  #onEscapeKeyDown = (evt) => {
-    if (evt.key === 'Escape') {
-      evt.preventDefault();
-      if (this.#currentFormIndex !== null) {
-        this.#replaceFormToEvent(this.#currentFormIndex);
-      }
+  #renderEvent(event) {
+    const eventPresenter = new EventPresenter({
+      eventListContainer: this.#tripEventListComponent.element,
+      destinations: this.#tripModel.destinations,
+      offers: this.#tripModel.offers,
+      onDataChange: this.#handleDataChange,
+      onModeChange: this.#handleModeChange
+    });
+
+    eventPresenter.init(event);
+    this.#eventPresenters.set(event.id, eventPresenter);
+  }
+
+  #handleDataChange = (updatedEvent) => {
+    this.#tripModel.updateEvent(updatedEvent);
+
+    const eventPresenter = this.#eventPresenters.get(updatedEvent.id);
+    if (eventPresenter) {
+      eventPresenter.init(updatedEvent);
     }
   };
 
-  #replaceEventToForm = (index) => {
-    const tripEventComponent = this.#tripEventComponents[index];
-    const tripEventEditComponent = this.#tripEventEditComponents[index];
-
-    replace(tripEventEditComponent, tripEventComponent);
-
-    this.#currentFormIndex = index;
-    document.addEventListener('keydown', this.#onEscapeKeyDown);
-  };
-
-  #replaceFormToEvent = (index) => {
-    const tripEventComponent = this.#tripEventComponents[index];
-    const tripEventEditComponent = this.#tripEventEditComponents[index];
-
-    replace(tripEventComponent, tripEventEditComponent);
-
-    this.#currentFormIndex = null;
-    document.removeEventListener('keydown', this.#onEscapeKeyDown);
+  #handleModeChange = () => {
+    this.#eventPresenters.forEach((presenter) => presenter.resetView());
   };
 }

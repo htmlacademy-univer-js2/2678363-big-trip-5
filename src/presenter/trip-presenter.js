@@ -1,5 +1,6 @@
 import FiltersView from '../view/filter-view.js';
 import SortView from '../view/sort-view.js';
+import { SORT_TYPES } from '../const.js';
 import TripEventListView from '../view/trip-event-list-view.js';
 import { render } from '../framework/render.js';
 import EventPresenter from './event-presenter.js';
@@ -12,7 +13,7 @@ export default class TripPresenter {
 
   #tripEventListComponent = null;
   #eventPresenters = new Map();
-  #currentSortType = 'day';
+  #currentSortType = SORT_TYPES.DAY;
   #isSorting = false;
 
   constructor({ tripEventsContainer, filtersContainer, sortContainer, tripModel }) {
@@ -66,17 +67,17 @@ export default class TripPresenter {
     const events = [...this.#tripModel.events];
 
     switch (this.#currentSortType) {
-      case 'time':
+      case SORT_TYPES.TIME:
         return events.sort((a, b) => {
           const durationA = a.endTime - a.startTime;
           const durationB = b.endTime - b.startTime;
           return durationB - durationA;
         });
 
-      case 'price':
+      case SORT_TYPES.PRICE:
         return events.sort((a, b) => b.price - a.price);
 
-      case 'day':
+      case SORT_TYPES.DAY:
       default:
         return events.sort((a, b) => a.startTime - b.startTime);
     }

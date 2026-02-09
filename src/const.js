@@ -4,4 +4,10 @@ const DESCRIPTION_TEXT = 'Lorem ipsum dolor sit amet, consectetur adipiscing eli
 
 const MSEC_IN_HOUR = 3600000;
 
-export { EVENT_TYPES, DESCRIPTION_TEXT, MSEC_IN_HOUR };
+const SORT_TYPES = {
+  DAY: 'day',
+  TIME: 'time',
+  PRICE: 'price'
+};
+
+export { EVENT_TYPES, DESCRIPTION_TEXT, MSEC_IN_HOUR, SORT_TYPES };

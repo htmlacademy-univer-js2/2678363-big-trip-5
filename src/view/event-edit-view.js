@@ -1,29 +1,11 @@
 import { EVENT_TYPES } from '../const.js';
 import { formatDateTime } from '../utils.js';
-import AbstractView from '../framework/view/abstract-view.js';
+import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 
-function createTripEventEditTemplate(eventData = null, destinations = [], offers = []) {
-  const fallbackDestination = destinations.length > 0
-    ? destinations[0]
-    : { name: 'Amsterdam', description: '', pictures: [] };
+function createTripEventEditTemplate(state, destinations, offers) {
+  const { type, destination, startTime, endTime, price, offers: selectedOffers } = state;
 
-  const defaultOffers = offers.filter((offer) =>
-    offer.id === 1 || offer.id === 2
-  );
-
-  const defaultEvent = {
-    type: 'flight',
-    destination: fallbackDestination,
-    startTime: new Date(),
-    endTime: new Date(Date.now() + 3600000),
-    price: '',
-    offers: defaultOffers
-  };
-
-  const event = eventData || defaultEvent;
-  const { type, destination, startTime, endTime, price, offers: selectedOffers } = event;
-
-  const dateValue = formatDateTime(new Date(startTime));
+  const startDateValue = formatDateTime(new Date(startTime));
   const endDateValue = formatDateTime(new Date(endTime));
 
   const offersTemplate = offers.map((offer, index) => {
@@ -108,7 +90,7 @@ function createTripEventEditTemplate(eventData = null, destinations = [], offers
                    id="event-start-time-1"
                    type="text"
                    name="event-start-time"
-                   value="${dateValue}">
+                   value="${startDateValue}">
             &mdash;
             <label class="visually-hidden" for="event-end-time-1">To</label>
             <input class="event__input event__input--time"
@@ -164,30 +146,43 @@ function createTripEventEditTemplate(eventData = null, destinations = [], offers
   `;
 }
 
-export default class TripEventEditView extends AbstractView {
-  #eventData = null;
+export default class TripEventEditView extends AbstractStatefulView {
   #destinations = [];
   #offers = [];
   #onFormSubmit = null;
   #onCloseClick = null;
 
-  constructor({ eventData, destinations, offers, onFormSubmit, onCloseClick }) {
+  constructor({
+    eventData,
+    destinations,
+    offers,
+    onFormSubmit,
+    onCloseClick,
+  }) {
     super();
-    this.#eventData = eventData;
+    this._setState = TripEventEditView.parseEventToState(eventData, destinations, offers);
     this.#destinations = destinations;
     this.#offers = offers;
     this.#onFormSubmit = onFormSubmit;
     this.#onCloseClick = onCloseClick;
 
-    const formElement = this.element.querySelector('.event--edit');
-    const closeButton = this.element.querySelector('.event__rollup-btn');
-
-    formElement.addEventListener('submit', this.#formSubmitHandler);
-    closeButton.addEventListener('click', this.#closeClickHandler);
+    this._restoreHandlers();
   }
 
   get template() {
-    return createTripEventEditTemplate(this.#eventData, this.#destinations, this.#offers);
+    return createTripEventEditTemplate(this._state, this.#destinations, this.#offers);
+  }
+
+  _restoreHandlers() {
+    const formElement = this.element.querySelector('.event--edit');
+    const closeButton = this.element.querySelector('.event__rollup-btn');
+    const eventType = this.element.querySelector('.event__type-btn');
+    const destinationInput = this.element.querySelector('.event__input--destination');
+
+    formElement.addEventListener('submit', this.#formSubmitHandler);
+    closeButton.addEventListener('click', this.#closeClickHandler);
+    eventType.addEventListener('change', this.#eventTypeChangeHandler);
+    destinationInput.addEventListener('change', this.#destinationChangeHandler);
   }
 
   #formSubmitHandler = (evt) => {
@@ -199,4 +194,67 @@ export default class TripEventEditView extends AbstractView {
     evt.preventDefault();
     this.#onCloseClick();
   };
+
+  #eventTypeChangeHandler = (evt) => {
+    evt.preventDefault();
+    const eventType = evt.target.dataset.eventType;
+    if (eventType) {
+      this.updateElement({
+        type: eventType,
+        offers: []
+      });
+    }
+  };
+
+  #destinationChangeHandler = (evt) => {
+    evt.preventDefault();
+    const destination = this.#destinations.find((dest) => dest.name === evt.target.value);
+    if (destination) {
+      this.updateElement({ destination });
+    }
+  };
+
+  static parseEventToState(eventData, destinations, offers) {
+    if (!eventData) {
+      const fallbackDestination = destinations.length > 0
+        ? destinations[0]
+        : { name: 'Amsterdam', description: '', pictures: [] };
+
+      const defaultOffers = offers.filter((offer) =>
+        offer.id === 1 || offer.id === 2
+      );
+
+      return {
+        type: 'flight',
+        destination: fallbackDestination,
+        startTime: new Date(),
+        endTime: new Date(Date.now() + 3600000),
+        price: '',
+        offers: defaultOffers,
+        isFavorite: false
+      };
+    }
+
+    return {
+      type: eventData.type,
+      destination: eventData.destination,
+      startTime: eventData.startTime,
+      endTime: eventData.endTime,
+      price: eventData.price,
+      offers: eventData.offers,
+      isFavorite: eventData.isFavorite
+    };
+  }
+
+  static parseStateToEvent(state) {
+    return {
+      type: state.type,
+      destination: state.destination,
+      startTime: state.startTime,
+      endTime: state.endTime,
+      price: state.price,
+      offers: state.offers,
+      isFavorite: state.isFavorite
+    };
+  }
 }

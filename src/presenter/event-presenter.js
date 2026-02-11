@@ -1,11 +1,7 @@
-import TripEventEditView from '../view/trip-event-edit-view.js';
-import TripEventView from '../view/trip-event-view.js';
+import { MODE } from '../const.js';
+import TripEventEditView from '../view/event-edit-view.js';
+import TripEventView from '../view/event-view.js';
 import { render, replace, remove } from '../framework/render.js';
-
-const Mode = {
-  DEFAULT: 'DEFAULT',
-  EDITING: 'EDITING',
-};
 
 export default class EventPresenter {
   #eventListContainer = null;
@@ -17,7 +13,7 @@ export default class EventPresenter {
 
   #eventComponent = null;
   #eventEditComponent = null;
-  #mode = Mode.DEFAULT;
+  #mode = MODE.DEFAULT;
 
   constructor({ eventListContainer, destinations, offers, onDataChange, onModeChange }) {
     this.#eventListContainer = eventListContainer;
@@ -55,7 +51,7 @@ export default class EventPresenter {
   }
 
   resetView() {
-    if (this.#mode !== Mode.DEFAULT) {
+    if (this.#mode !== MODE.DEFAULT) {
       this.#replaceFormToEvent();
     }
   }
@@ -69,13 +65,13 @@ export default class EventPresenter {
     this.#handleModeChange();
     replace(this.#eventEditComponent, this.#eventComponent);
     document.addEventListener('keydown', this.#escKeyDownHandler);
-    this.#mode = Mode.EDITING;
+    this.#mode = MODE.EDITING;
   };
 
   #replaceFormToEvent = () => {
     replace(this.#eventComponent, this.#eventEditComponent);
     document.removeEventListener('keydown', this.#escKeyDownHandler);
-    this.#mode = Mode.DEFAULT;
+    this.#mode = MODE.DEFAULT;
   };
 
   #escKeyDownHandler = (evt) => {

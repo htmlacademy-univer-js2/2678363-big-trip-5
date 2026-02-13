@@ -1,6 +1,6 @@
 import { MODE } from '../const.js';
-import TripEventEditView from '../view/event-edit-view.js';
-import TripEventView from '../view/event-view.js';
+import EventEditView from '../view/event-edit-view.js';
+import EventView from '../view/event-view.js';
 import { render, replace, remove } from '../framework/render.js';
 
 export default class EventPresenter {
@@ -28,13 +28,13 @@ export default class EventPresenter {
 
     const prevComponent = this.#eventComponent;
 
-    this.#eventComponent = new TripEventView({
+    this.#eventComponent = new EventView({
       event: this.#event,
       onRollupClick: this.#handleRollupClick,
       onFavoriteClick: this.#handleFavoriteClick
     });
 
-    this.#eventEditComponent = new TripEventEditView({
+    this.#eventEditComponent = new EventEditView({
       eventData: this.#event,
       destinations: this.#destinations,
       offers: this.#offers,

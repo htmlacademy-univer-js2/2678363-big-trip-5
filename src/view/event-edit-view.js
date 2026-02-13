@@ -2,14 +2,30 @@ import { EVENT_TYPES } from '../const.js';
 import { formatDateTime } from '../utils.js';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 
-function createTripEventEditTemplate(state, destinations, offers) {
+const DEFAULT_EVENT = {
+  type: 'flight',
+  destination: null,
+  startTime: new Date(),
+  endTime: new Date(Date.now() + 3600000),
+  price: '',
+  offers: [],
+  isFavorite: false
+};
+
+function createEventEditTemplate(state, destinations, offers) {
   const { type, destination, startTime, endTime, price, offers: selectedOffers } = state;
 
   const startDateValue = formatDateTime(new Date(startTime));
   const endDateValue = formatDateTime(new Date(endTime));
 
-  const offersTemplate = offers.map((offer, index) => {
-    const isSelected = selectedOffers.some((selected) => selected.id === offer.id);
+  const offersByType = offers.filter((offer) =>
+    offer.type?.toLowerCase() === type?.toLowerCase()
+  );
+
+  const selectedOfferIds = new Set(selectedOffers.map((offer) => offer.id));
+
+  const offersTemplate = offersByType.map((offer, index) => {
+    const isSelected = selectedOfferIds.has(offer.id);
     return `
       <div class="event__offer-selector">
         <input
@@ -17,6 +33,7 @@ function createTripEventEditTemplate(state, destinations, offers) {
           id="event-offer-${index}"
           type="checkbox"
           name="event-offer"
+          data-offer-id="${offer.id}"
           ${isSelected ? 'checked' : ''}
         >
         <label class="event__offer-label" for="event-offer-${index}">
@@ -46,7 +63,7 @@ function createTripEventEditTemplate(state, destinations, offers) {
   `).join('');
 
   const destinationOptions = destinations.map((dest) => `
-    <option value="${dest.name}" ${destination.name === dest.name ? 'selected' : ''}>
+    <option value="${dest.name}" ${destination?.name === dest.name ? 'selected' : ''}>
       ${dest.name}
     </option>
   `).join('');
@@ -77,7 +94,7 @@ function createTripEventEditTemplate(state, destinations, offers) {
                    id="event-destination-1"
                    type="text"
                    name="event-destination"
-                   value="${destination.name}"
+                   value="${destination?.name || ''}"
                    list="destination-list-1">
             <datalist id="destination-list-1">
               ${destinationOptions}
@@ -121,16 +138,18 @@ function createTripEventEditTemplate(state, destinations, offers) {
         </header>
 
         <section class="event__details">
-          <section class="event__section event__section--offers">
-            <h3 class="event__section-title event__section-title--offers">Offers</h3>
-            <div class="event__available-offers">
-              ${offersTemplate}
-            </div>
-          </section>
+          ${offersByType.length > 0 ? `
+            <section class="event__section event__section--offers">
+              <h3 class="event__section-title event__section-title--offers">Offers</h3>
+              <div class="event__available-offers">
+                ${offersTemplate}
+              </div>
+            </section>
+          ` : ''}
           <section class="event__section event__section--destination">
             <h3 class="event__section-title event__section-title--destination">Destination</h3>
-            ${destination.description ? `<p class="event__destination-description">${destination.description}</p>` : ''}
-            ${destination.pictures && destination.pictures.length > 0 ? `
+            ${destination?.description ? `<p class="event__destination-description">${destination.description}</p>` : ''}
+            ${destination?.pictures?.length ? `
               <div class="event__photos-container">
                 <div class="event__photos-tape">
                   ${destination.pictures.map((pic) => `
@@ -146,21 +165,21 @@ function createTripEventEditTemplate(state, destinations, offers) {
   `;
 }
 
-export default class TripEventEditView extends AbstractStatefulView {
+export default class EventEditView extends AbstractStatefulView {
   #destinations = [];
   #offers = [];
   #onFormSubmit = null;
   #onCloseClick = null;
 
   constructor({
-    eventData,
+    eventData = DEFAULT_EVENT,
     destinations,
     offers,
     onFormSubmit,
     onCloseClick,
   }) {
     super();
-    this._setState = TripEventEditView.parseEventToState(eventData, destinations, offers);
+    this._setState(EventEditView.parseEventToState(eventData));
     this.#destinations = destinations;
     this.#offers = offers;
     this.#onFormSubmit = onFormSubmit;
@@ -170,24 +189,36 @@ export default class TripEventEditView extends AbstractStatefulView {
   }
 
   get template() {
-    return createTripEventEditTemplate(this._state, this.#destinations, this.#offers);
+    return createEventEditTemplate(this._state, this.#destinations, this.#offers);
+  }
+
+  reset(eventData) {
+    this.updateElement(
+      EventEditView.parseEventToState(eventData)
+    );
   }
 
   _restoreHandlers() {
     const formElement = this.element.querySelector('.event--edit');
     const closeButton = this.element.querySelector('.event__rollup-btn');
-    const eventType = this.element.querySelector('.event__type-btn');
+    const eventTypeInput = this.element.querySelectorAll('.event__type-input');
     const destinationInput = this.element.querySelector('.event__input--destination');
+    const offerCheckbox = this.element.querySelectorAll('.event__offer-checkbox');
 
     formElement.addEventListener('submit', this.#formSubmitHandler);
     closeButton.addEventListener('click', this.#closeClickHandler);
-    eventType.addEventListener('change', this.#eventTypeChangeHandler);
+    eventTypeInput.forEach((input) => {
+      input.addEventListener('change', this.#eventTypeChangeHandler);
+    });
     destinationInput.addEventListener('change', this.#destinationChangeHandler);
+    offerCheckbox.forEach((checkbox) => {
+      checkbox.addEventListener('change', this.#offerChangeHandler);
+    });
   }
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
-    this.#onFormSubmit();
+    this.#onFormSubmit(EventEditView.parseStateToEvent(this._state));
   };
 
   #closeClickHandler = (evt) => {
@@ -197,64 +228,54 @@ export default class TripEventEditView extends AbstractStatefulView {
 
   #eventTypeChangeHandler = (evt) => {
     evt.preventDefault();
-    const eventType = evt.target.dataset.eventType;
-    if (eventType) {
-      this.updateElement({
-        type: eventType,
-        offers: []
-      });
-    }
+    const targetType = evt.target.value;
+    const validSelectedOffers = this._state.offers.filter((offer) =>
+      offer.type?.toLowerCase() === targetType?.toLowerCase()
+    );
+    this.updateElement({
+      type: targetType,
+      offers: validSelectedOffers
+    });
   };
 
   #destinationChangeHandler = (evt) => {
     evt.preventDefault();
-    const destination = this.#destinations.find((dest) => dest.name === evt.target.value);
-    if (destination) {
-      this.updateElement({ destination });
-    }
+    const targetDestination = evt.target.value;
+    const newDestination = this.#destinations.find((item) => item.name === targetDestination);
+    this.updateElement({
+      destination: newDestination
+    });
   };
 
-  static parseEventToState(eventData, destinations, offers) {
-    if (!eventData) {
-      const fallbackDestination = destinations.length > 0
-        ? destinations[0]
-        : { name: 'Amsterdam', description: '', pictures: [] };
+  #offerChangeHandler = (evt) => {
+    evt.preventDefault();
+    const offerId = parseInt(evt.target.dataset.offerId, 10);
+    const isChecked = evt.target.checked;
 
-      const defaultOffers = offers.filter((offer) =>
-        offer.id === 1 || offer.id === 2
-      );
+    const currentOffers = [...this._state.offers];
 
-      return {
-        type: 'flight',
-        destination: fallbackDestination,
-        startTime: new Date(),
-        endTime: new Date(Date.now() + 3600000),
-        price: '',
-        offers: defaultOffers,
-        isFavorite: false
-      };
+    if (isChecked) {
+      const offerToAdd = this.#offers.find((offer) => offer.id === offerId);
+      if (offerToAdd && !currentOffers.some((offer) => offer.id === offerId)) {
+        currentOffers.push(offerToAdd);
+      }
+    } else {
+      const offerIndex = currentOffers.findIndex((offer) => offer.id === offerId);
+      if (offerIndex !== -1) {
+        currentOffers.splice(offerIndex, 1);
+      }
     }
 
-    return {
-      type: eventData.type,
-      destination: eventData.destination,
-      startTime: eventData.startTime,
-      endTime: eventData.endTime,
-      price: eventData.price,
-      offers: eventData.offers,
-      isFavorite: eventData.isFavorite
-    };
+    this.updateElement({
+      offers: currentOffers
+    });
+  };
+
+  static parseEventToState(eventData) {
+    return { ...eventData };
   }
 
   static parseStateToEvent(state) {
-    return {
-      type: state.type,
-      destination: state.destination,
-      startTime: state.startTime,
-      endTime: state.endTime,
-      price: state.price,
-      offers: state.offers,
-      isFavorite: state.isFavorite
-    };
+    return { ...state };
   }
 }

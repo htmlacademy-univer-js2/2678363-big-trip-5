@@ -1,7 +1,7 @@
 import { formatDate, formatTime, getDuration } from '../utils.js';
 import AbstractView from '../framework/view/abstract-view.js';
 
-function createTripEventTemplate(eventData) {
+function createEventTemplate(eventData) {
   const { type, destination, startTime, endTime, price, offers, isFavorite } = eventData;
 
   const startDate = new Date(startTime);
@@ -59,7 +59,7 @@ function createTripEventTemplate(eventData) {
   `;
 }
 
-export default class TripEventView extends AbstractView {
+export default class EventView extends AbstractView {
   #event = null;
   #onRollupClick = null;
   #onFavoriteClick = null;
@@ -78,7 +78,7 @@ export default class TripEventView extends AbstractView {
   }
 
   get template() {
-    return createTripEventTemplate(this.#event);
+    return createEventTemplate(this.#event);
   }
 
   #favoriteClickHandler = (evt) => {

@@ -1,3 +1,5 @@
+import { OFFERS } from './mock/offers';
+
 function getRandomArrayElement(items) {
   return items[Math.floor(Math.random() * items.length)];
 }
@@ -34,4 +36,14 @@ function getDuration(startDate, endDate) {
   return `${minutes}M`;
 }
 
-export { getRandomArrayElement, getRandomNumber, formatDate, formatTime, formatDateTime, getDuration };
+function getRandomOffers(eventType) {
+  const offersByType = OFFERS.filter((offer) => offer.type === eventType);
+
+  const count = getRandomNumber(0, offersByType.length);
+
+  return [...offersByType]
+    .sort(() => 0.5 - Math.random())
+    .slice(0, count);
+}
+
+export { getRandomArrayElement, getRandomNumber, formatDate, formatTime, formatDateTime, getDuration, getRandomOffers };

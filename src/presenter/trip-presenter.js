@@ -1,7 +1,7 @@
 import { SORT_TYPES } from '../const.js';
 import FiltersView from '../view/filter-view.js';
 import SortView from '../view/sort-view.js';
-import TripEventListView from '../view/event-list-view.js';
+import EventListView from '../view/event-list-view.js';
 import { render } from '../framework/render.js';
 import EventPresenter from './event-presenter.js';
 
@@ -21,7 +21,7 @@ export default class TripPresenter {
     this.#filtersContainer = filtersContainer;
     this.#sortContainer = sortContainer;
     this.#tripModel = tripModel;
-    this.#tripEventListComponent = new TripEventListView();
+    this.#tripEventListComponent = new EventListView();
   }
 
   init() {

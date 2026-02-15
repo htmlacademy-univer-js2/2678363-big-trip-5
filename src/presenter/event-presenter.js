@@ -1,11 +1,7 @@
-import TripEventEditView from '../view/trip-event-edit-view.js';
-import TripEventView from '../view/trip-event-view.js';
+import { MODE } from '../const.js';
+import EventEditView from '../view/event-edit-view.js';
+import EventView from '../view/event-view.js';
 import { render, replace, remove } from '../framework/render.js';
-
-const Mode = {
-  DEFAULT: 'DEFAULT',
-  EDITING: 'EDITING',
-};
 
 export default class EventPresenter {
   #eventListContainer = null;
@@ -17,7 +13,7 @@ export default class EventPresenter {
 
   #eventComponent = null;
   #eventEditComponent = null;
-  #mode = Mode.DEFAULT;
+  #mode = MODE.DEFAULT;
 
   constructor({ eventListContainer, destinations, offers, onDataChange, onModeChange }) {
     this.#eventListContainer = eventListContainer;
@@ -30,15 +26,16 @@ export default class EventPresenter {
   init(event) {
     this.#event = event;
 
-    const prevComponent = this.#eventComponent;
+    const prevEventComponent = this.#eventComponent;
+    const prevEventEditComponent = this.#eventEditComponent;
 
-    this.#eventComponent = new TripEventView({
+    this.#eventComponent = new EventView({
       event: this.#event,
       onRollupClick: this.#handleRollupClick,
       onFavoriteClick: this.#handleFavoriteClick
     });
 
-    this.#eventEditComponent = new TripEventEditView({
+    this.#eventEditComponent = new EventEditView({
       eventData: this.#event,
       destinations: this.#destinations,
       offers: this.#offers,
@@ -46,16 +43,26 @@ export default class EventPresenter {
       onCloseClick: this.#handleCloseClick
     });
 
-    if (prevComponent) {
-      replace(this.#eventComponent, prevComponent);
-      remove(prevComponent);
+    if (prevEventComponent === null) {
+      render(this.#eventComponent, this.#eventListContainer);
+      return;
+    }
+
+    if (this.#mode === MODE.DEFAULT && prevEventComponent.element.parentElement) {
+      replace(this.#eventComponent, prevEventComponent);
+      remove(prevEventComponent);
+      remove(prevEventEditComponent);
+    } else if (this.#mode === MODE.EDITING && prevEventEditComponent?.element.parentElement) {
+      replace(this.#eventEditComponent, prevEventEditComponent);
+      remove(prevEventComponent);
+      remove(prevEventEditComponent);
     } else {
       render(this.#eventComponent, this.#eventListContainer);
     }
   }
 
   resetView() {
-    if (this.#mode !== Mode.DEFAULT) {
+    if (this.#mode !== MODE.DEFAULT) {
       this.#replaceFormToEvent();
     }
   }
@@ -69,13 +76,13 @@ export default class EventPresenter {
     this.#handleModeChange();
     replace(this.#eventEditComponent, this.#eventComponent);
     document.addEventListener('keydown', this.#escKeyDownHandler);
-    this.#mode = Mode.EDITING;
+    this.#mode = MODE.EDITING;
   };
 
   #replaceFormToEvent = () => {
     replace(this.#eventComponent, this.#eventEditComponent);
     document.removeEventListener('keydown', this.#escKeyDownHandler);
-    this.#mode = Mode.DEFAULT;
+    this.#mode = MODE.DEFAULT;
   };
 
   #escKeyDownHandler = (evt) => {
@@ -93,7 +100,8 @@ export default class EventPresenter {
     this.#handleDataChange({ ...this.#event, isFavorite: !this.#event.isFavorite });
   };
 
-  #handleFormSubmit = () => {
+  #handleFormSubmit = (eventData) => {
+    this.#handleDataChange(eventData);
     this.#replaceFormToEvent();
   };
 

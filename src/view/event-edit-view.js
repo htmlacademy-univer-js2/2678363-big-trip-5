@@ -18,9 +18,7 @@ function createEventEditTemplate(state, destinations, offers) {
   const startDateValue = formatDateTime(new Date(startTime));
   const endDateValue = formatDateTime(new Date(endTime));
 
-  const offersByType = offers.filter((offer) =>
-    offer.type?.toLowerCase() === type?.toLowerCase()
-  );
+  const offersByType = offers.filter((offer) => offer.type === type);
 
   const selectedOfferIds = new Set(selectedOffers.map((offer) => offer.id));
 
@@ -33,7 +31,7 @@ function createEventEditTemplate(state, destinations, offers) {
           id="event-offer-${index}"
           type="checkbox"
           name="event-offer"
-          data-offer-id="${offer.id}"
+          value="${offer.id}"
           ${isSelected ? 'checked' : ''}
         >
         <label class="event__offer-label" for="event-offer-${index}">
@@ -94,7 +92,7 @@ function createEventEditTemplate(state, destinations, offers) {
                    id="event-destination-1"
                    type="text"
                    name="event-destination"
-                   value="${destination?.name || ''}"
+                   value="${destination.name}"
                    list="destination-list-1">
             <datalist id="destination-list-1">
               ${destinationOptions}
@@ -148,7 +146,7 @@ function createEventEditTemplate(state, destinations, offers) {
           ` : ''}
           <section class="event__section event__section--destination">
             <h3 class="event__section-title event__section-title--destination">Destination</h3>
-            ${destination?.description ? `<p class="event__destination-description">${destination.description}</p>` : ''}
+            ${destination.description ? `<p class="event__destination-description">${destination.description}</p>` : ''}
             ${destination?.pictures?.length ? `
               <div class="event__photos-container">
                 <div class="event__photos-tape">
@@ -179,7 +177,7 @@ export default class EventEditView extends AbstractStatefulView {
     onCloseClick,
   }) {
     super();
-    this._setState(EventEditView.parseEventToState(eventData));
+    this._setState({ ...eventData });
     this.#destinations = destinations;
     this.#offers = offers;
     this.#onFormSubmit = onFormSubmit;
@@ -190,12 +188,6 @@ export default class EventEditView extends AbstractStatefulView {
 
   get template() {
     return createEventEditTemplate(this._state, this.#destinations, this.#offers);
-  }
-
-  reset(eventData) {
-    this.updateElement(
-      EventEditView.parseEventToState(eventData)
-    );
   }
 
   _restoreHandlers() {
@@ -218,7 +210,7 @@ export default class EventEditView extends AbstractStatefulView {
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
-    this.#onFormSubmit(EventEditView.parseStateToEvent(this._state));
+    this.#onFormSubmit({ ...this._state });
   };
 
   #closeClickHandler = (evt) => {
@@ -242,14 +234,18 @@ export default class EventEditView extends AbstractStatefulView {
     evt.preventDefault();
     const targetDestination = evt.target.value;
     const newDestination = this.#destinations.find((item) => item.name === targetDestination);
-    this.updateElement({
-      destination: newDestination
-    });
+    if (newDestination) {
+      this.updateElement({
+        destination: newDestination
+      });
+    } else {
+      evt.target.value = this._state.destination.name;
+    }
   };
 
   #offerChangeHandler = (evt) => {
     evt.preventDefault();
-    const offerId = parseInt(evt.target.dataset.offerId, 10);
+    const offerId = parseInt(evt.target.value, 10);
     const isChecked = evt.target.checked;
 
     const currentOffers = [...this._state.offers];
@@ -270,12 +266,4 @@ export default class EventEditView extends AbstractStatefulView {
       offers: currentOffers
     });
   };
-
-  static parseEventToState(eventData) {
-    return { ...eventData };
-  }
-
-  static parseStateToEvent(state) {
-    return { ...state };
-  }
 }

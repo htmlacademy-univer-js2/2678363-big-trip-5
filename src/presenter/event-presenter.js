@@ -26,7 +26,8 @@ export default class EventPresenter {
   init(event) {
     this.#event = event;
 
-    const prevComponent = this.#eventComponent;
+    const prevEventComponent = this.#eventComponent;
+    const prevEventEditComponent = this.#eventEditComponent;
 
     this.#eventComponent = new EventView({
       event: this.#event,
@@ -42,9 +43,19 @@ export default class EventPresenter {
       onCloseClick: this.#handleCloseClick
     });
 
-    if (prevComponent) {
-      replace(this.#eventComponent, prevComponent);
-      remove(prevComponent);
+    if (prevEventComponent === null) {
+      render(this.#eventComponent, this.#eventListContainer);
+      return;
+    }
+
+    if (this.#mode === MODE.DEFAULT && prevEventComponent.element.parentElement) {
+      replace(this.#eventComponent, prevEventComponent);
+      remove(prevEventComponent);
+      remove(prevEventEditComponent);
+    } else if (this.#mode === MODE.EDITING && prevEventEditComponent?.element.parentElement) {
+      replace(this.#eventEditComponent, prevEventEditComponent);
+      remove(prevEventComponent);
+      remove(prevEventEditComponent);
     } else {
       render(this.#eventComponent, this.#eventListContainer);
     }
@@ -89,7 +100,8 @@ export default class EventPresenter {
     this.#handleDataChange({ ...this.#event, isFavorite: !this.#event.isFavorite });
   };
 
-  #handleFormSubmit = () => {
+  #handleFormSubmit = (eventData) => {
+    this.#handleDataChange(eventData);
     this.#replaceFormToEvent();
   };
 

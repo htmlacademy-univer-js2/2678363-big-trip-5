@@ -177,7 +177,7 @@ export default class EventEditView extends AbstractStatefulView {
     onCloseClick,
   }) {
     super();
-    this._setState({ ...eventData });
+    this._setState(eventData);
     this.#destinations = destinations;
     this.#offers = offers;
     this.#onFormSubmit = onFormSubmit;
@@ -193,15 +193,13 @@ export default class EventEditView extends AbstractStatefulView {
   _restoreHandlers() {
     const formElement = this.element.querySelector('.event--edit');
     const closeButton = this.element.querySelector('.event__rollup-btn');
-    const eventTypeInput = this.element.querySelectorAll('.event__type-input');
+    const eventTypeInput = this.element.querySelector('.event__type-group');
     const destinationInput = this.element.querySelector('.event__input--destination');
     const offerCheckbox = this.element.querySelectorAll('.event__offer-checkbox');
 
     formElement.addEventListener('submit', this.#formSubmitHandler);
     closeButton.addEventListener('click', this.#closeClickHandler);
-    eventTypeInput.forEach((input) => {
-      input.addEventListener('change', this.#eventTypeChangeHandler);
-    });
+    eventTypeInput.addEventListener('change', this.#eventTypeChangeHandler);
     destinationInput.addEventListener('change', this.#destinationChangeHandler);
     offerCheckbox.forEach((checkbox) => {
       checkbox.addEventListener('change', this.#offerChangeHandler);
@@ -219,47 +217,36 @@ export default class EventEditView extends AbstractStatefulView {
   };
 
   #eventTypeChangeHandler = (evt) => {
-    evt.preventDefault();
-    const targetType = evt.target.value;
-    const validSelectedOffers = this._state.offers.filter((offer) =>
-      offer.type?.toLowerCase() === targetType?.toLowerCase()
-    );
-    this.updateElement({
-      type: targetType,
-      offers: validSelectedOffers
-    });
+    if (evt.target.classList.contains('event__type-input')) {
+      evt.preventDefault();
+      const targetType = evt.target.value;
+      this.updateElement({
+        type: targetType,
+        offers: []
+      });
+    }
   };
 
   #destinationChangeHandler = (evt) => {
     evt.preventDefault();
     const targetDestination = evt.target.value;
     const newDestination = this.#destinations.find((item) => item.name === targetDestination);
-    if (newDestination) {
-      this.updateElement({
-        destination: newDestination
-      });
-    } else {
-      evt.target.value = this._state.destination.name;
-    }
+    this.updateElement({
+      destination: newDestination || this._state.destination
+    });
   };
 
   #offerChangeHandler = (evt) => {
     evt.preventDefault();
     const offerId = parseInt(evt.target.value, 10);
     const isChecked = evt.target.checked;
-
-    const currentOffers = [...this._state.offers];
+    let currentOffers = [...this._state.offers];
 
     if (isChecked) {
-      const offerToAdd = this.#offers.find((offer) => offer.id === offerId);
-      if (offerToAdd && !currentOffers.some((offer) => offer.id === offerId)) {
-        currentOffers.push(offerToAdd);
-      }
+      const offer = this.#offers.find((item) => item.id === offerId);
+      currentOffers.push(offer);
     } else {
-      const offerIndex = currentOffers.findIndex((offer) => offer.id === offerId);
-      if (offerIndex !== -1) {
-        currentOffers.splice(offerIndex, 1);
-      }
+      currentOffers = currentOffers.filter((item) => item.id !== offerId);
     }
 
     this.updateElement({

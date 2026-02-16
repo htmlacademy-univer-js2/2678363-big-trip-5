@@ -1,6 +1,8 @@
 import { EVENT_TYPES } from '../const.js';
 import { formatDateTime } from '../utils.js';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.min.css';
 
 const DEFAULT_EVENT = {
   type: 'flight',
@@ -168,6 +170,8 @@ export default class EventEditView extends AbstractStatefulView {
   #offers = [];
   #onFormSubmit = null;
   #onCloseClick = null;
+  #datepickerStart = null;
+  #datepickerEnd = null;
 
   constructor({
     eventData = DEFAULT_EVENT,
@@ -190,6 +194,19 @@ export default class EventEditView extends AbstractStatefulView {
     return createEventEditTemplate(this._state, this.#destinations, this.#offers);
   }
 
+  removeElement() {
+    super.removeElement();
+
+    if (this.#datepickerStart) {
+      this.#datepickerStart.destroy();
+      this.#datepickerStart = null;
+    }
+    if (this.#datepickerEnd) {
+      this.#datepickerEnd.destroy();
+      this.#datepickerEnd = null;
+    }
+  }
+
   _restoreHandlers() {
     const formElement = this.element.querySelector('.event--edit');
     const closeButton = this.element.querySelector('.event__rollup-btn');
@@ -204,7 +221,50 @@ export default class EventEditView extends AbstractStatefulView {
     offerCheckbox.forEach((checkbox) => {
       checkbox.addEventListener('change', this.#offerChangeHandler);
     });
+
+    this.#setDatepickers();
   }
+
+  #setDatepickers() {
+    const commonConfig = {
+      dateFormat: 'd/m/y H:i',
+      enableTime: true,
+      'time_24hr': true,
+    };
+
+    this.#datepickerStart = flatpickr(
+      this.element.querySelector('#event-start-time-1'),
+      {
+        ...commonConfig,
+        defaultDate: this._state.startTime,
+        onChange: this.#dateFromChangeHandler,
+        maxDate: this._state.endTime,
+      }
+    );
+
+    this.#datepickerEnd = flatpickr(
+      this.element.querySelector('#event-end-time-1'),
+      {
+        ...commonConfig,
+        defaultDate: this._state.endTime,
+        onChange: this.#dateToChangeHandler,
+        minDate: this._state.startTime,
+      }
+    );
+  }
+
+  #dateFromChangeHandler = ([userDate]) => {
+    this._setState({
+      startTime: userDate
+    });
+  };
+
+  #dateToChangeHandler = ([userDate]) => {
+    this._setState({
+      endTime: userDate
+    });
+  };
+
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();

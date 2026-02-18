@@ -1,13 +1,16 @@
 import DestinationModel from './destination-model.js';
 import EventModel from './event-model.js';
 import OfferModel from './offer-model.js';
+import Observable from '../framework/observable.js';
 
-export default class TripModel {
+
+export default class TripModel extends Observable {
   #destinations = [];
   #events = [];
   #offers = [];
 
   constructor(destinations, events, offers) {
+    super();
     this.#destinations = destinations.map((destination) => new DestinationModel(destination));
     this.#events = events.map((event) => new EventModel(event));
     this.#offers = offers.map((offer) => new OfferModel(offer));
@@ -27,6 +30,10 @@ export default class TripModel {
 
   set events(events) {
     this.#events = events;
+  }
+
+  getEventById(id) {
+    return this.#events.find((event) => event.id === id);
   }
 
   get offers() {

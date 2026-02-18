@@ -1,5 +1,5 @@
-import { SORT_TYPES } from '../const.js';
-import FiltersView from '../view/filter-view.js';
+import { SORT_TYPES, FILTER_TYPES } from '../const.js';
+import FilterView from '../view/filter-view.js';
 import SortView from '../view/sort-view.js';
 import EventListView from '../view/event-list-view.js';
 import { render } from '../framework/render.js';
@@ -14,6 +14,7 @@ export default class TripPresenter {
   #tripEventListComponent = null;
   #eventPresenters = new Map();
   #currentSortType = SORT_TYPES.DAY;
+  #currentFilterType = FILTER_TYPES.EVERYTHING;
   #isSorting = false;
 
   constructor({ tripEventsContainer, filtersContainer, sortContainer, tripModel }) {
@@ -31,7 +32,7 @@ export default class TripPresenter {
   }
 
   #renderFilters() {
-    render(new FiltersView(), this.#filtersContainer);
+    render(new FilterView(), this.#filtersContainer);
   }
 
   #renderSort() {
@@ -80,6 +81,26 @@ export default class TripPresenter {
       case SORT_TYPES.DAY:
       default:
         return events.sort((a, b) => a.startTime - b.startTime);
+    }
+  }
+
+  #getFilteredEvents() {
+    const events = [...this.#tripModel.events];
+    const currentDate = Date.now();
+
+    switch (this.#currentFilterType) {
+      case FILTER_TYPES.FUTURE:
+        return events.filter((event) => event.startTime > currentDate);
+
+      case FILTER_TYPES.PRESENT:
+        return events.filter((event) => event.startTime <= currentDate && event.endTime >= currentDate);
+
+      case FILTER_TYPES.PAST:
+        return events.filter((event) => event.endTime < currentDate);
+
+      case FILTER_TYPES.EVERYTHING:
+      default:
+        return events;
     }
   }
 

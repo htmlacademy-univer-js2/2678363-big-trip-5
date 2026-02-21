@@ -16,10 +16,17 @@ const MODE = {
 };
 
 const FILTER_TYPES = {
-  EVERYTHING: 'EVERYTHING',
-  FUTURE: 'FUTURE',
-  PRESENT: 'PRESENT',
-  PAST: 'PAST'
+  EVERYTHING: 'everything',
+  FUTURE: 'future',
+  PRESENT: 'present',
+  PAST: 'past'
 };
 
-export { EVENT_TYPES, DESCRIPTION_TEXT, MSEC_IN_HOUR, SORT_TYPES, MODE, FILTER_TYPES };
+const MESSAGES = {
+  'EVERYTHING': 'Click New Event to create your first point',
+  'PAST': 'There are no past events now',
+  'PRESENT': 'There are no present events now',
+  'FUTURE': 'There are no future events now'
+};
+
+export { EVENT_TYPES, DESCRIPTION_TEXT, MSEC_IN_HOUR, SORT_TYPES, MODE, FILTER_TYPES, MESSAGES };

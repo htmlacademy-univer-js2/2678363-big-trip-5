@@ -1,54 +1,96 @@
 import { SORT_TYPES, FILTER_TYPES } from '../const.js';
-import FilterView from '../view/filter-view.js';
 import SortView from '../view/sort-view.js';
 import EventListView from '../view/event-list-view.js';
-import { render } from '../framework/render.js';
+import NoEventView from '../view/no-event-view.js';
+import { render, remove } from '../framework/render.js';
 import EventPresenter from './event-presenter.js';
 
 export default class TripPresenter {
   #tripEventsContainer = null;
-  #filtersContainer = null;
   #sortContainer = null;
   #tripModel = null;
+  #filterModel = null;
 
   #tripEventListComponent = null;
+  #noEventComponent = null;
+  #sortComponent = null;
   #eventPresenters = new Map();
   #currentSortType = SORT_TYPES.DAY;
-  #currentFilterType = FILTER_TYPES.EVERYTHING;
   #isSorting = false;
 
-  constructor({ tripEventsContainer, filtersContainer, sortContainer, tripModel }) {
+  constructor({ tripEventsContainer, sortContainer, tripModel, filterModel }) {
     this.#tripEventsContainer = tripEventsContainer;
-    this.#filtersContainer = filtersContainer;
     this.#sortContainer = sortContainer;
     this.#tripModel = tripModel;
+    this.#filterModel = filterModel;
     this.#tripEventListComponent = new EventListView();
+
+    this.#tripModel.addObserver(this.#handleModelChange);
+    this.#filterModel.addObserver(this.#handleModelChange);
   }
 
   init() {
-    this.#renderFilters();
     this.#renderSort();
     this.#renderTripEvents();
   }
 
-  #renderFilters() {
-    render(new FilterView(), this.#filtersContainer);
-  }
-
-  #renderSort() {
-    render(
-      new SortView({
-        onSortTypeChange: this.#handleSortTypeChange
-      }),
-      this.#sortContainer
-    );
-  }
+  #handleModelChange = (updateType) => {
+    if (updateType === 'filter') {
+      this.#currentSortType = SORT_TYPES.DAY;
+      if (this.#sortComponent) {
+        remove(this.#sortComponent);
+        this.#sortComponent = null;
+      }
+      this.#renderSort();
+    }
+    this.#clearEventList();
+    this.#renderTripEvents();
+  };
 
   #renderTripEvents() {
     const events = this.#getSortedEvents();
-    render(this.#tripEventListComponent, this.#tripEventsContainer);
 
-    events.forEach((event) => this.#renderEvent(event));
+    if (events.length === 0) {
+      this.#renderNoEvents();
+    } else {
+      render(this.#tripEventListComponent, this.#tripEventsContainer);
+      events.forEach((event) => this.#renderEvent(event));
+    }
+  }
+
+  #renderNoEvents() {
+    this.#noEventComponent = new NoEventView({
+      filterType: this.#filterModel.filter
+    });
+    render(this.#noEventComponent, this.#tripEventsContainer);
+  }
+
+  #getFilteredEvents() {
+    const events = this.#tripModel.events;
+    const currentDate = Date.now();
+
+    switch (this.#filterModel.filter) {
+      case FILTER_TYPES.FUTURE:
+        return events.filter((event) => event.startTime > currentDate);
+
+      case FILTER_TYPES.PRESENT:
+        return events.filter((event) => event.startTime <= currentDate && event.endTime >= currentDate);
+
+      case FILTER_TYPES.PAST:
+        return events.filter((event) => event.endTime < currentDate);
+
+      case FILTER_TYPES.EVERYTHING:
+      default:
+        return events;
+    }
+  }
+
+  #renderSort() {
+    this.#sortComponent = new SortView({
+      onSortTypeChange: this.#handleSortTypeChange,
+      currentSortType: this.#currentSortType
+    });
+    render(this.#sortComponent, this.#sortContainer);
   }
 
   #renderEvent(event) {
@@ -65,48 +107,37 @@ export default class TripPresenter {
   }
 
   #getSortedEvents() {
-    const events = [...this.#tripModel.events];
+    const filteredEvents = this.#getFilteredEvents();
 
     switch (this.#currentSortType) {
       case SORT_TYPES.TIME:
-        return events.sort((a, b) => {
+        return filteredEvents.sort((a, b) => {
           const durationA = a.endTime - a.startTime;
           const durationB = b.endTime - b.startTime;
           return durationB - durationA;
         });
 
       case SORT_TYPES.PRICE:
-        return events.sort((a, b) => b.price - a.price);
+        return filteredEvents.sort((a, b) => b.price - a.price);
 
       case SORT_TYPES.DAY:
       default:
-        return events.sort((a, b) => a.startTime - b.startTime);
-    }
-  }
-
-  #getFilteredEvents() {
-    const events = [...this.#tripModel.events];
-    const currentDate = Date.now();
-
-    switch (this.#currentFilterType) {
-      case FILTER_TYPES.FUTURE:
-        return events.filter((event) => event.startTime > currentDate);
-
-      case FILTER_TYPES.PRESENT:
-        return events.filter((event) => event.startTime <= currentDate && event.endTime >= currentDate);
-
-      case FILTER_TYPES.PAST:
-        return events.filter((event) => event.endTime < currentDate);
-
-      case FILTER_TYPES.EVERYTHING:
-      default:
-        return events;
+        return filteredEvents.sort((a, b) => a.startTime - b.startTime);
     }
   }
 
   #clearEventList() {
     this.#eventPresenters.forEach((presenter) => presenter.destroy());
     this.#eventPresenters.clear();
+
+    if (this.#noEventComponent) {
+      remove(this.#noEventComponent);
+      this.#noEventComponent = null;
+    }
+
+    if (this.#tripEventListComponent) {
+      remove(this.#tripEventListComponent);
+    }
   }
 
   #handleSortTypeChange = (sortType) => {
@@ -117,9 +148,7 @@ export default class TripPresenter {
     this.#currentSortType = sortType;
     this.#isSorting = true;
 
-    this.#clearEventList();
-
-    this.#renderTripEvents();
+    this.#handleModelChange('sort', { sortType });
 
     this.#isSorting = false;
   };

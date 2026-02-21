@@ -47,14 +47,30 @@ export default class TripModel extends Observable {
   updateEvent(updatedEvent) {
     const index = this.#events.findIndex((event) => event.id === updatedEvent.id);
 
-    if (index !== -1) {
-      this.#events[index] = {
-        ...this.#events[index],
-        ...updatedEvent
-      };
-      return true;
+    if (index === -1) {
+      throw new Error('Can\'t update unexisting event');
     }
 
-    return false;
+    this.#events[index] = new EventModel(updatedEvent);
+    this._notify(updatedEvent);
+  }
+
+  addEvent(event) {
+    const newId = Math.max(...this.#events.map((e) => e.id), 0) + 1;
+    const newEvent = new EventModel({ ...event, id: newId });
+
+    this.#events.push(newEvent);
+    this._notify(newEvent);
+  }
+
+  deleteEvent(id) {
+    const index = this.#events.findIndex((event) => event.id === id);
+
+    if (index === -1) {
+      throw new Error('Can\'t delete unexisting event');
+    }
+
+    this.#events.splice(index, 1);
+    this._notify({ id });
   }
 }

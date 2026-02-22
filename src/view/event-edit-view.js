@@ -63,10 +63,10 @@ function createEventEditTemplate(state, destinations, offers) {
   `).join('');
 
   const destinationOptions = destinations.map((dest) => `
-    <option value="${dest.name}" ${destination?.name === dest.name ? 'selected' : ''}>
-      ${dest.name}
-    </option>
+    <option value="${dest.name}">${dest.name}</option>
   `).join('');
+
+  const hasDestination = destination?.description;
 
   return `
     <li class="trip-events__item">
@@ -94,8 +94,9 @@ function createEventEditTemplate(state, destinations, offers) {
                    id="event-destination-1"
                    type="text"
                    name="event-destination"
-                   value="${destination.name}"
-                   list="destination-list-1">
+                   value="${destination?.name || ''}"
+                   list="destination-list-1"
+                   required>
             <datalist id="destination-list-1">
               ${destinationOptions}
             </datalist>
@@ -146,19 +147,21 @@ function createEventEditTemplate(state, destinations, offers) {
               </div>
             </section>
           ` : ''}
-          <section class="event__section event__section--destination">
-            <h3 class="event__section-title event__section-title--destination">Destination</h3>
-            ${destination.description ? `<p class="event__destination-description">${destination.description}</p>` : ''}
-            ${destination?.pictures?.length ? `
-              <div class="event__photos-container">
-                <div class="event__photos-tape">
-                  ${destination.pictures.map((pic) => `
-                    <img class="event__photo" src="${pic.src}" alt="Destination photo">
-                  `).join('')}
+           ${hasDestination ? `
+            <section class="event__section event__section--destination">
+              <h3 class="event__section-title event__section-title--destination">Destination</h3>
+              ${destination.description ? `<p class="event__destination-description">${destination.description}</p>` : ''}
+              ${destination.pictures?.length ? `
+                <div class="event__photos-container">
+                  <div class="event__photos-tape">
+                    ${destination.pictures.map((pic) => `
+                      <img class="event__photo" src="${pic.src}" alt="Destination photo">
+                    `).join('')}
+                  </div>
                 </div>
-              </div>
-            ` : ''}
-          </section>
+              ` : ''}
+            </section>
+          ` : ''}
         </section>
       </form>
     </li>
@@ -170,6 +173,7 @@ export default class EventEditView extends AbstractStatefulView {
   #offers = [];
   #onFormSubmit = null;
   #onCloseClick = null;
+  #onDeleteClick = null;
   #datepickerStart = null;
   #datepickerEnd = null;
 
@@ -179,6 +183,7 @@ export default class EventEditView extends AbstractStatefulView {
     offers,
     onFormSubmit,
     onCloseClick,
+    onDeleteClick,
   }) {
     super();
     this._setState(eventData);
@@ -186,6 +191,7 @@ export default class EventEditView extends AbstractStatefulView {
     this.#offers = offers;
     this.#onFormSubmit = onFormSubmit;
     this.#onCloseClick = onCloseClick;
+    this.#onDeleteClick = onDeleteClick;
 
     this._restoreHandlers();
   }
@@ -195,7 +201,7 @@ export default class EventEditView extends AbstractStatefulView {
   }
 
   removeElement() {
-    super.removeElement();
+    document.removeEventListener('keydown', this.#escKeyDownHandler);
 
     if (this.#datepickerStart) {
       this.#datepickerStart.destroy();
@@ -205,22 +211,27 @@ export default class EventEditView extends AbstractStatefulView {
       this.#datepickerEnd.destroy();
       this.#datepickerEnd = null;
     }
+    super.removeElement();
   }
 
   _restoreHandlers() {
     const formElement = this.element.querySelector('.event--edit');
     const closeButton = this.element.querySelector('.event__rollup-btn');
+    const deleteButton = this.element.querySelector('.event__reset-btn');
     const eventTypeInput = this.element.querySelector('.event__type-group');
     const destinationInput = this.element.querySelector('.event__input--destination');
     const offerCheckbox = this.element.querySelectorAll('.event__offer-checkbox');
+    const priceInput = this.element.querySelector('.event__input--price');
 
     formElement.addEventListener('submit', this.#formSubmitHandler);
     closeButton.addEventListener('click', this.#closeClickHandler);
+    deleteButton.addEventListener('click', this.#deleteClickHandler);
     eventTypeInput.addEventListener('change', this.#eventTypeChangeHandler);
     destinationInput.addEventListener('change', this.#destinationChangeHandler);
     offerCheckbox.forEach((checkbox) => {
       checkbox.addEventListener('change', this.#offerChangeHandler);
     });
+    priceInput.addEventListener('input', this.#priceInputHandler);
 
     this.#setDatepickers();
   }
@@ -276,6 +287,22 @@ export default class EventEditView extends AbstractStatefulView {
     this.#onCloseClick();
   };
 
+  #deleteClickHandler = (evt) => {
+    evt.preventDefault();
+    if (this.#onDeleteClick) {
+      this.#onDeleteClick(this._state);
+    } else if (this.#onCloseClick) {
+      this.#onCloseClick();
+    }
+  };
+
+  #escKeyDownHandler = (evt) => {
+    if (evt.key === 'Escape') {
+      evt.preventDefault();
+      this.#closeClickHandler(evt);
+    }
+  };
+
   #eventTypeChangeHandler = (evt) => {
     if (evt.target.classList.contains('event__type-input')) {
       evt.preventDefault();
@@ -313,4 +340,14 @@ export default class EventEditView extends AbstractStatefulView {
       offers: currentOffers
     });
   };
+
+  #priceInputHandler = (evt) => {
+    evt.preventDefault();
+    const priceValue = evt.target.value;
+    this._setState({ price: priceValue });
+  };
+
+  close() {
+    this.#closeClickHandler(new Event('click'));
+  }
 }

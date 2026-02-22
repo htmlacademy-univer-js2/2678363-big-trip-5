@@ -15,4 +15,33 @@ const MODE = {
   EDITING: 'EDITING',
 };
 
-export { EVENT_TYPES, DESCRIPTION_TEXT, MSEC_IN_HOUR, SORT_TYPES, MODE };
+const FILTER_TYPES = {
+  EVERYTHING: 'everything',
+  FUTURE: 'future',
+  PRESENT: 'present',
+  PAST: 'past'
+};
+
+const MESSAGES = {
+  'EVERYTHING': 'Click New Event to create your first point',
+  'PAST': 'There are no past events now',
+  'PRESENT': 'There are no present events now',
+  'FUTURE': 'There are no future events now'
+};
+
+const USER_ACTION = {
+  UPDATE_EVENT: 'UPDATE_EVENT',
+  ADD_EVENT: 'ADD_EVENT',
+  DELETE_EVENT: 'DELETE_EVENT',
+};
+
+const UPDATE_TYPES = {
+  PATCH: 'PATCH',
+  MINOR: 'MINOR',
+  MAJOR: 'MAJOR',
+};
+
+export {
+  EVENT_TYPES, DESCRIPTION_TEXT, MSEC_IN_HOUR, SORT_TYPES,
+  MODE, FILTER_TYPES, MESSAGES, USER_ACTION, UPDATE_TYPES
+};

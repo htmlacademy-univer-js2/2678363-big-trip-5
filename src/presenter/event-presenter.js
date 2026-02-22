@@ -1,4 +1,4 @@
-import { MODE } from '../const.js';
+import { MODE, UPDATE_TYPES, USER_ACTION } from '../const.js';
 import EventEditView from '../view/event-edit-view.js';
 import EventView from '../view/event-view.js';
 import { render, replace, remove } from '../framework/render.js';
@@ -40,7 +40,8 @@ export default class EventPresenter {
       destinations: this.#destinations,
       offers: this.#offers,
       onFormSubmit: this.#handleFormSubmit,
-      onCloseClick: this.#handleCloseClick
+      onCloseClick: this.#handleCloseClick,
+      onDeleteClick: this.#handleDeleteClick
     });
 
     if (prevEventComponent === null) {
@@ -97,12 +98,27 @@ export default class EventPresenter {
   };
 
   #handleFavoriteClick = () => {
-    this.#handleDataChange({ ...this.#event, isFavorite: !this.#event.isFavorite });
+    this.#handleDataChange(
+      USER_ACTION.UPDATE_EVENT,
+      UPDATE_TYPES.PATCH,
+      { ...this.#event, isFavorite: !this.#event.isFavorite }
+    );
   };
 
   #handleFormSubmit = (eventData) => {
-    this.#handleDataChange(eventData);
+    this.#handleDataChange(
+      USER_ACTION.UPDATE_EVENT,
+      UPDATE_TYPES.MINOR,
+      eventData);
     this.#replaceFormToEvent();
+  };
+
+  #handleDeleteClick = (eventData) => {
+    this.#handleDataChange(
+      USER_ACTION.DELETE_EVENT,
+      UPDATE_TYPES.MAJOR,
+      { id: eventData.id }
+    );
   };
 
   #handleCloseClick = () => {

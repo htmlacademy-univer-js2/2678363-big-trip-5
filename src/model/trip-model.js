@@ -32,10 +32,6 @@ export default class TripModel extends Observable {
     this.#events = events;
   }
 
-  getEventById(id) {
-    return this.#events.find((event) => event.id === id);
-  }
-
   get offers() {
     return this.#offers;
   }
@@ -44,7 +40,7 @@ export default class TripModel extends Observable {
     this.#offers = offers;
   }
 
-  updateEvent(updatedEvent) {
+  updateEvent(updateType, updatedEvent) {
     const index = this.#events.findIndex((event) => event.id === updatedEvent.id);
 
     if (index === -1) {
@@ -52,18 +48,19 @@ export default class TripModel extends Observable {
     }
 
     this.#events[index] = new EventModel(updatedEvent);
-    this._notify(updatedEvent);
+    this._notify(updateType, updatedEvent);
   }
 
-  addEvent(event) {
+  addEvent(updateType, event) {
     const newId = Math.max(...this.#events.map((e) => e.id), 0) + 1;
     const newEvent = new EventModel({ ...event, id: newId });
 
     this.#events.push(newEvent);
-    this._notify(newEvent);
+    this._notify(updateType, newEvent);
   }
 
-  deleteEvent(id) {
+  deleteEvent(updateType, data) {
+    const id = typeof data === 'object' ? data.id : data;
     const index = this.#events.findIndex((event) => event.id === id);
 
     if (index === -1) {
@@ -71,6 +68,6 @@ export default class TripModel extends Observable {
     }
 
     this.#events.splice(index, 1);
-    this._notify({ id });
+    this._notify(updateType, id);
   }
 }

@@ -28,3 +28,13 @@ const tripPresenter = new TripPresenter({
 
 filterPresenter.init();
 tripPresenter.init();
+
+const newEventButton = document.querySelector('.trip-main__event-add-btn');
+newEventButton.addEventListener('click', () => {
+  if (newEventButton.disabled) {
+    return;
+  }
+
+  newEventButton.disabled = true;
+  tripPresenter.createEvent();
+});

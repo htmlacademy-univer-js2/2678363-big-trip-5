@@ -105,18 +105,24 @@ export default class EventPresenter {
     );
   };
 
-  #handleFormSubmit = (eventData) => {
+  #handleFormSubmit = (updatedEvent) => {
+    const isMinorUpdate =
+      this.#event.startTime !== updatedEvent.startTime ||
+      this.#event.endTime !== updatedEvent.endTime ||
+      this.#event.price !== updatedEvent.price ||
+      this.#event.type !== updatedEvent.type;
+
     this.#handleDataChange(
       USER_ACTION.UPDATE_EVENT,
-      UPDATE_TYPES.MINOR,
-      eventData);
+      isMinorUpdate ? UPDATE_TYPES.MINOR : UPDATE_TYPES.PATCH,
+      updatedEvent);
     this.#replaceFormToEvent();
   };
 
   #handleDeleteClick = (eventData) => {
     this.#handleDataChange(
       USER_ACTION.DELETE_EVENT,
-      UPDATE_TYPES.MAJOR,
+      UPDATE_TYPES.MINOR,
       { id: eventData.id }
     );
   };

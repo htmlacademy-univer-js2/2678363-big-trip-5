@@ -12,7 +12,7 @@ const SORT_TYPES = {
 
 const MODE = {
   DEFAULT: 'DEFAULT',
-  EDITING: 'EDITING',
+  EDITING: 'EDITING'
 };
 
 const FILTER_TYPES = {
@@ -32,13 +32,15 @@ const MESSAGES = {
 const USER_ACTION = {
   UPDATE_EVENT: 'UPDATE_EVENT',
   ADD_EVENT: 'ADD_EVENT',
-  DELETE_EVENT: 'DELETE_EVENT',
+  DELETE_EVENT: 'DELETE_EVENT'
 };
 
 const UPDATE_TYPES = {
   PATCH: 'PATCH',
   MINOR: 'MINOR',
   MAJOR: 'MAJOR',
+  FILTER: 'FILTER',
+  SORT: 'SORT'
 };
 
 export {

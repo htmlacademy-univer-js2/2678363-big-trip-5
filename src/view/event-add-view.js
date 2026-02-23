@@ -29,11 +29,11 @@ export default class EventAddView extends EventEditView {
       resetButton.textContent = 'Cancel';
     }
 
-    document.addEventListener('keydown', (evt) => {
-      if (evt.key === 'Escape') {
-        evt.preventDefault();
-        this.close();
-      }
-    });
+    document.addEventListener('keydown', this._escKeyDownHandler);
+  }
+
+  removeElement() {
+    document.removeEventListener('keydown', this._escKeyDownHandler);
+    super.removeElement();
   }
 }

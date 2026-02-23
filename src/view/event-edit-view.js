@@ -201,7 +201,7 @@ export default class EventEditView extends AbstractStatefulView {
   }
 
   removeElement() {
-    document.removeEventListener('keydown', this.#escKeyDownHandler);
+    document.removeEventListener('keydown', this._escKeyDownHandler);
 
     if (this.#datepickerStart) {
       this.#datepickerStart.destroy();
@@ -282,8 +282,7 @@ export default class EventEditView extends AbstractStatefulView {
     this.#onFormSubmit({ ...this._state });
   };
 
-  #closeClickHandler = (evt) => {
-    evt.preventDefault();
+  #closeClickHandler = () => {
     this.#onCloseClick();
   };
 
@@ -296,7 +295,7 @@ export default class EventEditView extends AbstractStatefulView {
     }
   };
 
-  #escKeyDownHandler = (evt) => {
+  _escKeyDownHandler = (evt) => {
     if (evt.key === 'Escape') {
       evt.preventDefault();
       this.#closeClickHandler(evt);
@@ -346,8 +345,4 @@ export default class EventEditView extends AbstractStatefulView {
     const priceValue = evt.target.value;
     this._setState({ price: priceValue });
   };
-
-  close() {
-    this.#closeClickHandler(new Event('click'));
-  }
 }

@@ -61,13 +61,13 @@ export default class TripModel extends Observable {
 
   deleteEvent(updateType, data) {
     const id = typeof data === 'object' ? data.id : data;
-    const index = this.#events.findIndex((event) => event.id === id);
+    const newEvents = this.#events.filter((event) => event.id !== id);
 
-    if (index === -1) {
+    if (newEvents.length === this.#events.length) {
       throw new Error('Can\'t delete unexisting event');
     }
 
-    this.#events.splice(index, 1);
+    this.#events = newEvents;
     this._notify(updateType, id);
   }
 }

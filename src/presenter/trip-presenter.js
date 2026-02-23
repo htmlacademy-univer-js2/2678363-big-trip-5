@@ -43,13 +43,9 @@ export default class TripPresenter {
       this.#unlockNewEventButton();
     }
 
-    if (updateType === UPDATE_TYPES.FILTER) {
+    if (updateType === UPDATE_TYPES.MAJOR) {
       this.#currentSortType = SORT_TYPES.DAY;
       this.#updateSortComponent();
-    }
-
-    if (updateType === UPDATE_TYPES.MAJOR) {
-      this.#filterModel.setFilter(FILTER_TYPES.EVERYTHING, UPDATE_TYPES.MAJOR);
     }
 
     this.#clearEventList();
@@ -166,7 +162,7 @@ export default class TripPresenter {
 
     this.#currentSortType = sortType;
 
-    this.#handleModelChange(UPDATE_TYPES.SORT);
+    this.#handleModelChange(UPDATE_TYPES.MINOR);
   };
 
 

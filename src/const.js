@@ -38,9 +38,7 @@ const USER_ACTION = {
 const UPDATE_TYPES = {
   PATCH: 'PATCH',
   MINOR: 'MINOR',
-  MAJOR: 'MAJOR',
-  FILTER: 'FILTER',
-  SORT: 'SORT'
+  MAJOR: 'MAJOR'
 };
 
 export {

@@ -10,6 +10,6 @@ export default class FilterModel extends Observable {
 
   setFilter(filterType) {
     this.#currentFilterType = filterType;
-    this._notify(UPDATE_TYPES.FILTER, filterType);
+    this._notify(UPDATE_TYPES.MAJOR, filterType);
   }
 }

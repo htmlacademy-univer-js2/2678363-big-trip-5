@@ -1,7 +1,7 @@
 import AbstractView from '../framework/view/abstract-view.js';
 import { SORT_TYPES } from '../const.js';
 
-function createSortTemplate (currentSortType = SORT_TYPES.DAY) {
+function createSortTemplate(currentSortType = SORT_TYPES.DAY) {
   return (
     `<form class="trip-events__trip-sort trip-sort" action="#" method="get">
     <div class="trip-sort__item trip-sort__item--day">

@@ -3,15 +3,13 @@ import FilterPresenter from './presenter/filter-presenter.js';
 import TripModel from './model/trip-model.js';
 import FilterModel from './model/filter-model.js';
 import PointsApiService from './api/points-api-service.js';
-
-const END_POINT = 'https://24.objects.htmlacademy.pro/big-trip';
-const AUTHORIZATION = 'Basic 123qweasdzxc';
+import { END_POINT, AUTHORIZATION } from './const.js';
 
 const tripEventsContainer = document.querySelector('.trip-events');
 const filtersContainer = document.querySelector('.trip-controls__filters');
 const sortContainer = document.querySelector('.trip-events');
 const tripModel = new TripModel({
-  pointApiService: new PointsApiService(END_POINT, AUTHORIZATION)
+  pointsApiService: new PointsApiService(END_POINT, AUTHORIZATION)
 });
 const filterModel = new FilterModel();
 
@@ -31,6 +29,7 @@ const tripPresenter = new TripPresenter({
 
 filterPresenter.init();
 tripPresenter.init();
+tripModel.init();
 
 const newEventButton = document.querySelector('.trip-main__event-add-btn');
 newEventButton.addEventListener('click', () => {

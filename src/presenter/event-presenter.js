@@ -107,15 +107,17 @@ export default class EventPresenter {
 
   #handleFormSubmit = (updatedEvent) => {
     const isMinorUpdate =
-      this.#event.startTime !== updatedEvent.startTime ||
-      this.#event.endTime !== updatedEvent.endTime ||
-      this.#event.price !== updatedEvent.price ||
+      this.#event.dateFrom !== updatedEvent.dateFrom ||
+      this.#event.dateTo !== updatedEvent.dateTo ||
+      this.#event.basePrice !== updatedEvent.basePrice ||
       this.#event.type !== updatedEvent.type;
 
     this.#handleDataChange(
       USER_ACTION.UPDATE_EVENT,
       isMinorUpdate ? UPDATE_TYPES.MINOR : UPDATE_TYPES.PATCH,
-      updatedEvent);
+      updatedEvent
+    );
+
     this.#replaceFormToEvent();
   };
 

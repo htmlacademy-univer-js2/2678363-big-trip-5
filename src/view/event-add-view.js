@@ -3,9 +3,9 @@ import EventEditView from './event-edit-view.js';
 const BLANK_EVENT = {
   type: 'flight',
   destination: null,
-  startTime: new Date(),
-  endTime: new Date(Date.now() + 3600000),
-  price: 0,
+  dateFrom: new Date(),
+  dateTo: new Date(Date.now() + 3600000),
+  basePrice: 0,
   offers: [],
   isFavorite: false
 };

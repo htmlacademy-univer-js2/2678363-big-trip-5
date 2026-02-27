@@ -2,10 +2,9 @@ import { formatDate, formatTime, getDuration } from '../utils.js';
 import AbstractView from '../framework/view/abstract-view.js';
 
 function createEventTemplate(eventData) {
-  const { type, destination, startTime, endTime, price, offers, isFavorite } = eventData;
-
-  const startDate = new Date(startTime);
-  const endDate = new Date(endTime);
+  const { type, destination, dateFrom, dateTo, basePrice, offers, isFavorite } = eventData;
+  const startDate = new Date(dateFrom);
+  const endDate = new Date(dateTo);
 
   const date = formatDate(startDate);
   const start = formatTime(startDate);
@@ -37,7 +36,7 @@ function createEventTemplate(eventData) {
           <p class="event__duration">${duration}</p>
         </div>
         <p class="event__price">
-          &euro;&nbsp;<span class="event__price-value">${price}</span>
+          &euro;&nbsp;<span class="event__price-value">${basePrice}</span>
         </p>
         ${offersTemplate ? `
           <h4 class="visually-hidden">Offers:</h4>

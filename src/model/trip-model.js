@@ -8,7 +8,6 @@ export default class TripModel extends Observable {
   #offers = [];
   #pointsApiService = null;
   #isLoading = true;
-  #adapter = new AdapterService();
 
   constructor({ pointsApiService }) {
     super();
@@ -62,7 +61,7 @@ export default class TripModel extends Observable {
       });
       this.#offers = allOffers;
 
-      const adaptedPoints = points.map((point) => this.#adapter.adaptToClient(point));
+      const adaptedPoints = points.map((point) => AdapterService.adaptToClient(point));
 
       this.#events = adaptedPoints.map((point) => {
         const destination = this.#destinations
@@ -100,7 +99,7 @@ export default class TripModel extends Observable {
 
     try {
       const response = await this.#pointsApiService.updatePoint(update);
-      const adaptedResponse = this.#adapter.adaptToClient(response);
+      const adaptedResponse = AdapterService.adaptToClient(response);
 
       const updatedPoint = {
         ...adaptedResponse,
@@ -127,7 +126,7 @@ export default class TripModel extends Observable {
   async addPoint(updateType, update) {
     try {
       const response = await this.#pointsApiService.addPoint(update);
-      const adaptedResponse = this.#adapter.adaptToClient(response);
+      const adaptedResponse = AdapterService.adaptToClient(response);
 
       const newPoint = {
         ...adaptedResponse,

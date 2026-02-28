@@ -3,7 +3,6 @@ import { METHODS } from '../const.js';
 import AdapterService from './adapter-service.js';
 
 export default class PointsApiService extends ApiService {
-  #adapter = new AdapterService();
 
   get points() {
     return this._load({ url: 'points' })
@@ -24,7 +23,7 @@ export default class PointsApiService extends ApiService {
     const response = await this._load({
       url: `points/${point.id}`,
       method: METHODS.PUT,
-      body: JSON.stringify(this.#adapter.adaptToServer(point)),
+      body: JSON.stringify(AdapterService.adaptToServer(point)),
       headers: new Headers({ 'Content-Type': 'application/json' })
     });
 
@@ -36,7 +35,7 @@ export default class PointsApiService extends ApiService {
     const response = await this._load({
       url: 'points',
       method: METHODS.POST,
-      body: JSON.stringify(this.#adapter.adaptToServer(point)),
+      body: JSON.stringify(AdapterService.adaptToServer(point)),
       headers: new Headers({ 'Content-Type': 'application/json' })
     });
 

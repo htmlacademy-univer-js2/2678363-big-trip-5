@@ -1,5 +1,5 @@
 export default class AdapterService {
-  adaptToServer(point) {
+  static adaptToServer(point) {
     const adaptedPoint = {
       'type': point.type,
       'destination': point.destination.id,
@@ -13,7 +13,7 @@ export default class AdapterService {
     return adaptedPoint;
   }
 
-  adaptToClient(point) {
+  static adaptToClient(point) {
     const adaptedPoint = {
       id: point.id,
       type: point.type,

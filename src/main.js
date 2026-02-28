@@ -2,14 +2,15 @@ import TripPresenter from './presenter/trip-presenter.js';
 import FilterPresenter from './presenter/filter-presenter.js';
 import TripModel from './model/trip-model.js';
 import FilterModel from './model/filter-model.js';
-import { DESTINATIONS } from './mock/destinations.js';
-import { EVENTS } from './mock/events.js';
-import { OFFERS } from './mock/offers.js';
+import PointsApiService from './api/points-api-service.js';
+import { END_POINT, AUTHORIZATION } from './const.js';
 
 const tripEventsContainer = document.querySelector('.trip-events');
 const filtersContainer = document.querySelector('.trip-controls__filters');
 const sortContainer = document.querySelector('.trip-events');
-const tripModel = new TripModel(DESTINATIONS, EVENTS, OFFERS);
+const tripModel = new TripModel({
+  pointsApiService: new PointsApiService(END_POINT, AUTHORIZATION)
+});
 const filterModel = new FilterModel();
 
 const filterPresenter = new FilterPresenter({
@@ -28,6 +29,7 @@ const tripPresenter = new TripPresenter({
 
 filterPresenter.init();
 tripPresenter.init();
+tripModel.init();
 
 const newEventButton = document.querySelector('.trip-main__event-add-btn');
 newEventButton.addEventListener('click', () => {

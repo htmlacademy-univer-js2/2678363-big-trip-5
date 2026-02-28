@@ -7,22 +7,22 @@ import 'flatpickr/dist/flatpickr.min.css';
 const DEFAULT_EVENT = {
   type: 'flight',
   destination: null,
-  startTime: new Date(),
-  endTime: new Date(Date.now() + 3600000),
+  dateFrom: new Date(),
+  dateTo: new Date(Date.now() + 3600000),
   price: '',
   offers: [],
   isFavorite: false
 };
 
 function createEventEditTemplate(state, destinations, offers) {
-  const { type, destination, startTime, endTime, price, offers: selectedOffers } = state;
+  const { type, destination, dateFrom, dateTo, basePrice, offers: selectedOffers } = state;
 
-  const startDateValue = formatDateTime(new Date(startTime));
-  const endDateValue = formatDateTime(new Date(endTime));
+  const startDateValue = formatDateTime(new Date(dateFrom));
+  const endDateValue = formatDateTime(new Date(dateTo));
 
   const offersByType = offers.filter((offer) => offer.type === type);
 
-  const selectedOfferIds = new Set(selectedOffers.map((offer) => offer.id));
+  const selectedOfferIds = new Set(selectedOffers?.map((offer) => offer?.id) || []);
 
   const offersTemplate = offersByType.map((offer, index) => {
     const isSelected = selectedOfferIds.has(offer.id);
@@ -128,7 +128,7 @@ function createEventEditTemplate(state, destinations, offers) {
                    type="number"
                    min="1"
                    name="event-price"
-                   value="${price}">
+                   value="${basePrice}">
           </div>
 
           <button class="event__save-btn btn btn--blue" type="submit">Save</button>
@@ -247,9 +247,9 @@ export default class EventEditView extends AbstractStatefulView {
       this.element.querySelector('#event-start-time-1'),
       {
         ...commonConfig,
-        defaultDate: this._state.startTime,
+        defaultDate: this._state.dateFrom,
         onChange: this.#dateFromChangeHandler,
-        maxDate: this._state.endTime,
+        maxDate: this._state.dateTo,
       }
     );
 
@@ -257,25 +257,24 @@ export default class EventEditView extends AbstractStatefulView {
       this.element.querySelector('#event-end-time-1'),
       {
         ...commonConfig,
-        defaultDate: this._state.endTime,
+        defaultDate: this._state.dateTo,
         onChange: this.#dateToChangeHandler,
-        minDate: this._state.startTime,
+        minDate: this._state.dateFrom,
       }
     );
   }
 
   #dateFromChangeHandler = ([userDate]) => {
     this._setState({
-      startTime: userDate
+      dateFrom: userDate
     });
   };
 
   #dateToChangeHandler = ([userDate]) => {
     this._setState({
-      endTime: userDate
+      dateTo: userDate
     });
   };
-
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
@@ -324,7 +323,7 @@ export default class EventEditView extends AbstractStatefulView {
 
   #offerChangeHandler = (evt) => {
     evt.preventDefault();
-    const offerId = parseInt(evt.target.value, 10);
+    const offerId = evt.target.value;
     const isChecked = evt.target.checked;
     let currentOffers = [...this._state.offers];
 
@@ -343,6 +342,6 @@ export default class EventEditView extends AbstractStatefulView {
   #priceInputHandler = (evt) => {
     evt.preventDefault();
     const priceValue = evt.target.value;
-    this._setState({ price: priceValue });
+    this._setState({ basePrice: priceValue });
   };
 }

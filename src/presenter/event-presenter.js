@@ -105,28 +105,46 @@ export default class EventPresenter {
     );
   };
 
-  #handleFormSubmit = (updatedEvent) => {
+  #getUpdateType(updatedEvent) {
     const isMinorUpdate =
       this.#event.dateFrom !== updatedEvent.dateFrom ||
       this.#event.dateTo !== updatedEvent.dateTo ||
       this.#event.basePrice !== updatedEvent.basePrice ||
       this.#event.type !== updatedEvent.type;
 
-    this.#handleDataChange(
-      USER_ACTION.UPDATE_EVENT,
-      isMinorUpdate ? UPDATE_TYPES.MINOR : UPDATE_TYPES.PATCH,
-      updatedEvent
-    );
+    return isMinorUpdate ? UPDATE_TYPES.MINOR : UPDATE_TYPES.PATCH;
+  }
 
-    this.#replaceFormToEvent();
+  #handleFormSubmit = async (updatedEvent) => {
+    this.#eventEditComponent.setSaving(true);
+
+    try {
+      await this.#handleDataChange(
+        USER_ACTION.UPDATE_EVENT,
+        this.#getUpdateType(updatedEvent),
+        updatedEvent
+      );
+
+      this.#replaceFormToEvent();
+    } catch (err) {
+      this.#eventEditComponent.setSaving(false);
+      this.#eventEditComponent.shake();
+    }
   };
 
-  #handleDeleteClick = (eventData) => {
-    this.#handleDataChange(
-      USER_ACTION.DELETE_EVENT,
-      UPDATE_TYPES.MINOR,
-      { id: eventData.id }
-    );
+  #handleDeleteClick = async (eventData) => {
+    this.#eventEditComponent.setDeleting(true);
+
+    try {
+      await this.#handleDataChange(
+        USER_ACTION.DELETE_EVENT,
+        UPDATE_TYPES.MAJOR,
+        { id: eventData.id }
+      );
+    } catch (err) {
+      this.#eventEditComponent.setDeleting(false);
+      this.#eventEditComponent.shake();
+    }
   };
 
   #handleCloseClick = () => {

@@ -15,7 +15,16 @@ const DEFAULT_EVENT = {
 };
 
 function createEventEditTemplate(state, destinations, offers) {
-  const { type, destination, dateFrom, dateTo, basePrice, offers: selectedOffers } = state;
+  const {
+    type,
+    destination,
+    dateFrom,
+    dateTo,
+    basePrice,
+    offers: selectedOffers,
+    isSaving,
+    isDeleting
+  } = state;
 
   const startDateValue = formatDateTime(new Date(dateFrom));
   const endDateValue = formatDateTime(new Date(dateTo));
@@ -67,6 +76,8 @@ function createEventEditTemplate(state, destinations, offers) {
   `).join('');
 
   const hasDestination = destination?.description;
+
+  const isDisabled = isSaving || isDeleting;
 
   return `
     <li class="trip-events__item">
@@ -131,9 +142,13 @@ function createEventEditTemplate(state, destinations, offers) {
                    value="${basePrice}">
           </div>
 
-          <button class="event__save-btn btn btn--blue" type="submit">Save</button>
-          <button class="event__reset-btn" type="reset">Delete</button>
-          <button class="event__rollup-btn" type="button">
+          <button class="event__save-btn btn btn--blue" type="submit" ${isDisabled ? 'disabled' : ''}>
+            ${isSaving ? 'Saving...' : 'Save'}
+          </button>
+          <button class="event__reset-btn" type="reset" ${isDisabled ? 'disabled' : ''}>
+            ${isDeleting ? 'Deleting...' : 'Delete'}
+          </button>
+          <button class="event__rollup-btn" type="button" ${isDisabled ? 'disabled' : ''}>
             <span class="visually-hidden">Close</span>
           </button>
         </header>
@@ -176,6 +191,8 @@ export default class EventEditView extends AbstractStatefulView {
   #onDeleteClick = null;
   #datepickerStart = null;
   #datepickerEnd = null;
+  #isSaving = false;
+  #isDeleting = false;
 
   constructor({
     eventData = DEFAULT_EVENT,
@@ -197,7 +214,21 @@ export default class EventEditView extends AbstractStatefulView {
   }
 
   get template() {
-    return createEventEditTemplate(this._state, this.#destinations, this.#offers);
+    return createEventEditTemplate(
+      { ...this._state, isSaving: this.#isSaving, isDeleting: this.#isDeleting },
+      this.#destinations,
+      this.#offers
+    );
+  }
+
+  setSaving(isSaving) {
+    this.#isSaving = isSaving;
+    this.updateElement({ isSaving });
+  }
+
+  setDeleting(isDeleting) {
+    this.#isDeleting = isDeleting;
+    this.updateElement({ isDeleting });
   }
 
   removeElement() {
@@ -344,4 +375,8 @@ export default class EventEditView extends AbstractStatefulView {
     const priceValue = evt.target.value;
     this._setState({ basePrice: priceValue });
   };
+
+  shake() {
+    super.shake();
+  }
 }

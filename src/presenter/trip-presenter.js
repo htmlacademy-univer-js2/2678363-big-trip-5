@@ -1,10 +1,11 @@
-import { SORT_TYPES, FILTER_TYPES, USER_ACTION, UPDATE_TYPES } from '../const.js';
+import { SORT_TYPES, FILTER_TYPES, USER_ACTION, UPDATE_TYPES, TIME_LIMIT } from '../const.js';
 import SortView from '../view/sort-view.js';
 import EventListView from '../view/event-list-view.js';
 import NoEventView from '../view/no-event-view.js';
 import EventAddView from '../view/event-add-view.js';
 import LoadingView from '../view/loading-view.js';
 import { render, remove, RenderPosition } from '../framework/render.js';
+import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
 import EventPresenter from './event-presenter.js';
 
 export default class TripPresenter {
@@ -20,6 +21,10 @@ export default class TripPresenter {
   #currentSortType = SORT_TYPES.DAY;
   #addEventComponent = null;
   #loadingComponent = null;
+  #uiBlocker = new UiBlocker({
+    lowerLimit: TIME_LIMIT.LOWER_LIMIT,
+    upperLimit: TIME_LIMIT.UPPER_LIMIT
+  });
 
   constructor({ tripEventsContainer, sortContainer, tripModel, filterModel }) {
     this.#tripEventsContainer = tripEventsContainer;
@@ -193,9 +198,13 @@ export default class TripPresenter {
   };
 
   #handleDataChange = (actionType, updateType, data) => {
+    this.#uiBlocker.block();
+
+    let promise;
+
     switch (actionType) {
       case USER_ACTION.UPDATE_EVENT:
-        this.#tripModel.updatePoint(updateType, data)
+        promise = this.#tripModel.updatePoint(updateType, data)
           .then((updatedPoint) => {
             if (updateType === UPDATE_TYPES.PATCH) {
               const eventPresenter = this.#eventPresenters.get(data.id);
@@ -208,7 +217,7 @@ export default class TripPresenter {
         break;
 
       case USER_ACTION.ADD_EVENT:
-        this.#tripModel.addPoint(updateType, data)
+        promise = this.#tripModel.addPoint(updateType, data)
           .then(() => {
             this.#clearEventList();
             this.#renderTripEvents();
@@ -216,13 +225,17 @@ export default class TripPresenter {
         break;
 
       case USER_ACTION.DELETE_EVENT:
-        this.#tripModel.deletePoint(updateType, data)
+        promise = this.#tripModel.deletePoint(updateType, data)
           .then(() => {
             this.#clearEventList();
             this.#renderTripEvents();
           });
         break;
     }
+
+    return promise.finally(() => {
+      this.#uiBlocker.unblock();
+    });
   };
 
   #handleModeChange = () => {
@@ -285,9 +298,16 @@ export default class TripPresenter {
     }
   }
 
-  #handleAddFormSubmit = (event) => {
-    this.#handleDataChange(USER_ACTION.ADD_EVENT, UPDATE_TYPES.MAJOR, event);
-    this.#handleAddFormClose();
+  #handleAddFormSubmit = async (event) => {
+    this.#addEventComponent.setSaving(true);
+
+    try {
+      await this.#handleDataChange(USER_ACTION.ADD_EVENT, UPDATE_TYPES.MAJOR, event);
+      this.#handleAddFormClose();
+    } catch (err) {
+      this.#addEventComponent.setSaving(false);
+      this.#addEventComponent.shake();
+    }
   };
 
   #handleAddFormClose = () => {
